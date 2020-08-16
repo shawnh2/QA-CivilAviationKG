@@ -11,6 +11,14 @@ def check_contain(words: list, question: str) -> bool:
     return False
 
 
+def check_list_contain(words: list, dst: list, *pos: int) -> bool:
+    # 检查列表中指定位置的包含关系
+    for i in pos:
+        if not check_contain(words, dst[i]):
+            return False
+    return True
+
+
 def check_endswith(words: list, question: str) -> bool:
     # 检查尾部关系
     return question.endswith(tuple(words))
