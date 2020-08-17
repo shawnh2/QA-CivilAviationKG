@@ -18,5 +18,8 @@ class Result(object):
     def get_words_types(self):
         return [t for t in self.region_wds.values()]
 
-    def get_words_by_type(self, type_name: str):
+    def __getitem__(self, type_name: str):
         return [k for k, v in self.region_wds.items() if v == type_name]
+
+    def __len__(self):
+        return len(self.region_wds)
