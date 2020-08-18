@@ -46,14 +46,15 @@ def check_endswith(words: list, question: str) -> bool:
     return question.endswith(tuple(words))
 
 
-def check_regexp(question: str, pattern: str, function: FunctionType, callback: FunctionType = None) -> bool:
+def check_regexp(question: str, *patterns: str, functions: list, callback: FunctionType = None) -> bool:
     # 检查正则关系
-    results = re.compile(pattern).findall(question)
-    if results:
-        value = function(results)
-        # 值为假时调用callback
-        if callback and not value:
-            callback(results)
-        else:
-            return value
+    for pattern, function in zip(patterns, functions):
+        results = re.compile(pattern).findall(question)
+        if results:
+            value = function(results)
+            # 值为假时调用callback
+            if callback and not value:
+                callback(results)
+            else:
+                return value
     return False

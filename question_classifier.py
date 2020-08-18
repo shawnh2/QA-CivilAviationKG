@@ -2,9 +2,9 @@
 import ahocorasick
 
 from lib.check import *
+from lib.regexp import *
 from lib.result import Result
 from lib.utils import read_words
-from lib.regexp import MultipleCmp, NumberCmp
 from lib.complement import year_complement, index_complement
 from lib.errors import QuestionError, QuestionOrderError
 
@@ -69,85 +69,90 @@ class QuestionClassifier:
         for w in self.region_tree.iter(filtered_question):
             region_wds.append(w[1][1])
         region_dict = {w: self.word_type_dict.get(w) for w in region_wds}
-        return Result(region_dict)
+        return Result(region_dict, question, filtered_question)
 
     def classify(self, question: str):
         result = self.question_filter(question)
         if result.is_null():
             return None
         try:
-            self._classify_tree(question, result)
+            self._classify_tree(result)
         except QuestionError as err:
             # 收集错误问题的提示
             result.add_msg(err.args[0])
         finally:
             return result
 
-    def _classify_tree(self, question: str, result: Result):
+    def _classify_tree(self, result: Result):
         # 收集实体类型
-        types = result.get_words_types()
-        year_count = types.count('year')
+        question = result.filtered_question
+        year_count = result.count('year')
 
         # 问题与单个年份相关
         if year_count == 1:
             # 全年总体情况
-            if check_contain(self.status_rwds, question) and 'year' in types and len(types) == 1:
+            if check_contain(self.status_rwds, question) and 'year' in result and len(result) == 1:
                 result.add_qtype('year_status')
             # 全年含有目录
             if check_contain(self.exist_qwds, question) and check_contain(self.catalog_rwds, question):
                 result.add_qtype('exist_catalog')
 
             # 目录
-            if 'catalog' in types:
+            if 'catalog' in result:
                 # 总体情况
                 if check_contain(self.status_rwds, question):
                     result.add_qtype('catalog_status')
 
             # 指标
-            if 'index' in types:
+            if 'index' in result:
                 # 值
                 if check_contain(self.value_qwds, question) or check_endswith(self.is_twds, question):
                     if not check_contain(self.child_index_rwds, question):
                         # 涉及地区
-                        if 'area' in types:
+                        if 'area' in result:
                             result.add_qtype('area_value')
                         else:
                             result.add_qtype('index_value')
                 # 值比较(上级)
-                if check_regexp(question, MultipleCmp,
-                                lambda x: check_contain(self.parent_index_rwds, x[0][-1]),
+                if check_regexp(question, MultipleCmp1,
+                                functions=[lambda x: check_contain(self.parent_index_rwds, x[0][-1])],
                                 callback=lambda x: QuestionOrderError.check(x, self.parent_index_rwds)
                                 ):
                     # 涉及地区
-                    if 'area' in types:
+                    if 'area' in result:
                         result.add_qtype('area_overall')
                     else:
                         result.add_qtype('index_overall')
                 # 值比较(同类同单位)
-                if types.count('index') == 2 and 'area' not in types:
-                    if check_regexp(question, MultipleCmp,
-                                    lambda x: check_list_contain(result['index'], x[0], 0, -1)
-                                    ):
+                if result.count('index') == 2 and 'area' not in result:
+                    if check_regexp(question, MultipleCmp1, functions=[
+                        lambda x: check_list_contain(result['index'], x[0], 0, -1)
+                    ]):
                         result.add_qtype('indexes_m_compare')  # 比较倍数关系
-                    if check_regexp(question, NumberCmp,
-                                    lambda x: (check_list_contain(result['index'], x[0], 0, -1) or
-                                               check_all_contain(result['index'], x[0][0]))
-                                    ):
+                    if check_regexp(question, NumberCmp1, functions=[
+                        lambda x: (check_list_contain(result['index'], x[0], 0, -1) or
+                                   check_all_contain(result['index'], x[0][0]))
+                    ]):
                         result.add_qtype('indexes_n_compare')  # 比较数量关系
+                # 值比较(同比)
+                if check_regexp(question, GrowthCmp, functions=[
+                    lambda x: check_contain(result['index'], x[0])
+                ]):
+                    result.add_qtype('indexes_g_compare')
                 # 地区值比较(相同指标不同地区)
-                if types.count('index') == 1 and types.count('area') == 2:
-                    if check_regexp(question, MultipleCmp,
-                                    lambda x: (check_list_contain(result['area'], x[0], 0, -1) and
-                                               check_list_contain(result['index'], x[0], 0))
-                                    ):
+                if result.count('index') == 1 and result.count('area') == 2:
+                    if check_regexp(question, MultipleCmp1, functions=[
+                        lambda x: (check_list_contain(result['area'], x[0], 0, -1) and
+                                   check_list_contain(result['index'], x[0], 0))
+                    ]):
                         result.add_qtype('areas_m_compare')  # 比较倍数关系
-                    if check_regexp(question, NumberCmp,
-                                    lambda x: ((check_list_contain(result['area'], x[0], 0, -1) and
-                                               check_contain(result['index'], x[0][0]))
-                                               or
-                                               (check_all_contain(result['area'], x[0][0]) and
-                                               check_list_any_contain(result['index'], x[0], 0, -1)))
-                                    ):
+                    if check_regexp(question, NumberCmp1, functions=[
+                        lambda x: ((check_list_contain(result['area'], x[0], 0, -1) and
+                                    check_contain(result['index'], x[0][0]))
+                                   or
+                                   (check_all_contain(result['area'], x[0][0]) and
+                                    check_list_any_contain(result['index'], x[0], 0, -1)))
+                    ]):
                         result.add_qtype('areas_n_compare')  # 比较数量关系
                 # 指标下不同地区组成情况
                 if check_contain(self.location_rwds, question):
@@ -166,6 +171,23 @@ class QuestionClassifier:
                     result.add_qtype('catalog_change')
                 elif check_contain(self.index_rwds, question):
                     result.add_qtype('index_change')
+
+            # 指标
+            if 'index' in result:
+                # 比较数值
+                if check_regexp(question, *NumberCmp2, functions=[
+                    lambda x: check_contain(result['index'], x[0]),
+                ]*3):
+                    result.add_qtype('indexes_2n_compare')
+                # 比较倍数
+                if check_regexp(question, MultipleCmp2, functions=[
+                    lambda x: check_list_any_contain(result['index'], x[0], 0, -1)
+                ]):
+                    result.add_qtype('indexes_2m_compare')
+
+            # 地区
+            if 'area' in result:
+                pass
 
         # 问题与多个年份相关
         elif year_count > 2:
