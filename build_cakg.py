@@ -3,13 +3,8 @@ import json
 
 from py2neo import Graph, Node
 
-# 前缀-标签映射字典        年份          目录            指标           地区/机场/公司集团
-PREFIX_LABEL_MAP = {'Y': "Year", 'C': "Catalog", 'I': "Index", 'A': "Area"}
-# 前缀-结构关系映射字典
-PREFIX_S_REL_MAP = {'Y-C': "include", 'C-I': "include", 'I-I': "contain",
-                    'I-A': "locate", 'A-A': "contain", 'A-I': "of"}
-# 前缀-值关系映射字典
-PREFIX_V_REL_MAP = {'Y-C': "info", 'Y-I': "value", 'Y-A': None}
+from lib.utils import write_to_file
+from lib.mapping import PREFIX_LABEL_MAP, PREFIX_S_REL_MAP, PREFIX_V_REL_MAP
 
 
 class CivilAviationKnowledgeGraph:
@@ -138,14 +133,8 @@ class CivilAviationKnowledgeGraph:
         if not os.path.exists(self.export_dir):
             os.mkdir(self.export_dir)
         for key, values in self.entities.items():
-            self.write_to_file(PREFIX_LABEL_MAP[key], values)
+            write_to_file(f"./data/dicts/{PREFIX_LABEL_MAP[key]}.txt", values)
         print("导出实体数据完毕.")
-
-    def write_to_file(self, filename: str, lines: list):
-        """ 保存关键字词典到本地 """
-        with open(f"./data/dicts/{filename}.txt", 'w', encoding='utf-8') as f:
-            for line in lines:
-                f.write(line + '\n')
 
 
 if __name__ == '__main__':
