@@ -68,17 +68,10 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2011年总体是货邮周转量的百分之几？'), [])
 
     # 指标同类之间的比较
-    def test_indexes_compare(self):
+    def test_indexes_1_compare(self):
         # 倍数比较
         self.assertEqual(self.check_question('2011年游客周转量是货邮周转量的几倍？'), ['indexes_m_compare'])
         self.assertEqual(self.check_question('2011年游客周转量是货邮周转量的百分之几？'), ['indexes_m_compare'])
-
-        self.assertEqual(self.check_question('2011年游客周转量是12年的百分之几？'), ['indexes_2m_compare'])
-        self.assertEqual(self.check_question('2011年的是12年游客周转量的百分之几？'), ['indexes_2m_compare'])
-        self.assertEqual(self.check_question('2011年游客周转量占12年的百分之？'), ['indexes_2m_compare'])
-        self.assertEqual(self.check_question('2011年游客周转量是12年的几倍？'), ['indexes_2m_compare'])
-        self.assertEqual(self.check_question('2011年游客周转量为12年的多少倍？'), ['indexes_2m_compare'])
-
         # 反例
         self.assertEqual(self.check_question('2011年总体是货邮周转量的几倍？'), [])
         self.assertEqual(self.check_question('2011年货邮周转量是货邮周转量的几倍？'), [])
@@ -95,13 +88,6 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('11年游客周转量与货邮周转量相比降低了多少？'), ['indexes_n_compare'])
         self.assertEqual(self.check_question('11年游客周转量与货邮周转量比，降低了多少？'), ['indexes_n_compare'])
         self.assertEqual(self.check_question('11年游客周转量与货邮周转量比较 降低了多少？'), ['indexes_n_compare'])
-
-        self.assertEqual(self.check_question('2011年游客周转量比12年降低了？'), ['indexes_2n_compare'])
-        self.assertEqual(self.check_question('2012年游客周转量比去年增加了？'), ['indexes_2n_compare'])
-        self.assertEqual(self.check_question('2012年游客周转量比去年多了多少？'), ['indexes_2n_compare'])
-        self.assertEqual(self.check_question('12年的货邮周转量比去年变化了多少？'), ['indexes_2n_compare'])
-        self.assertEqual(self.check_question('12年的货邮周转量同去年相比变化了多少？'), ['indexes_2n_compare'])
-        self.assertEqual(self.check_question('12年同去年相比，货邮周转量变化了多少？'), ['indexes_2n_compare'])
         # 反例
         self.assertEqual(self.check_question('2011年游客周转量,货邮周转量比运输总周转量降低了？'), [])
 
@@ -110,7 +96,21 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2012年游客周转量同比下降百分之几？'), ['indexes_g_compare'])
         self.assertEqual(self.check_question('2012年游客周转量和货邮周转量同比下降百分之几？'), ['indexes_g_compare'])
         # 反例
-        self.assertEqual(self.check_question('2012年游客周转量同比15年下降百分之几？'), [])
+        self.assertEqual(self.check_question('2012年游客周转量同比13年下降百分之几？'), [])
+
+    def test_indexes_2_compare(self):
+        self.assertEqual(self.check_question('2011年游客周转量是12年的百分之几？'), ['indexes_2m_compare'])
+        self.assertEqual(self.check_question('2011年的是12年游客周转量的百分之几？'), ['indexes_2m_compare'])
+        self.assertEqual(self.check_question('2011年游客周转量占12年的百分之？'), ['indexes_2m_compare'])
+        self.assertEqual(self.check_question('2011年游客周转量是12年的几倍？'), ['indexes_2m_compare'])
+        self.assertEqual(self.check_question('2011年游客周转量为12年的多少倍？'), ['indexes_2m_compare'])
+
+        self.assertEqual(self.check_question('2011年游客周转量比12年降低了？'), ['indexes_2n_compare'])
+        self.assertEqual(self.check_question('2012年游客周转量比去年增加了？'), ['indexes_2n_compare'])
+        self.assertEqual(self.check_question('2012年游客周转量比去年多了多少？'), ['indexes_2n_compare'])
+        self.assertEqual(self.check_question('12年的货邮周转量比去年变化了多少？'), ['indexes_2n_compare'])
+        self.assertEqual(self.check_question('12年的货邮周转量同去年相比变化了多少？'), ['indexes_2n_compare'])
+        self.assertEqual(self.check_question('12年同去年相比，货邮周转量变化了多少？'), ['indexes_2n_compare'])
 
     # 指标的组成
     def test_index_compose(self):
@@ -133,7 +133,7 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('11年父级是港澳台运输总周转量的多少倍？'), [])
 
     # 地区指标与地区指标的比较
-    def test_areas_compare(self):
+    def test_areas_1_compare(self):
         # 倍数比较
         self.assertEqual(self.check_question('11年港澳台运输总周转量占国内的百分之几？'), ['areas_m_compare'])
         self.assertEqual(self.check_question('11年国内的运输总周转量是港澳台的几倍？'), ['areas_m_compare'])
@@ -142,6 +142,7 @@ class QCTest(unittest.TestCase):
         # 反例
         self.assertEqual(self.check_question('11年港澳台运输总周转量是国内游客周转量的多少倍？'), [])
         self.assertEqual(self.check_question('11年港澳台是国内游客周转量的多少倍？'), [])
+
         # 数量比较
         self.assertEqual(self.check_question('2011年国内游客周转量比国际多多少？'), ['areas_n_compare'])
         self.assertEqual(self.check_question('2011年港澳台游客周转量比国内的少多少？'), ['areas_n_compare'])
@@ -149,6 +150,28 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2011年港澳台与国内的相比游客周转量降低多少？'), ['areas_n_compare'])
         # 反例
         self.assertEqual(self.check_question('2011年国内比国际游客周转量少了？'), [])
+
+        # 同比变化（只与前一年比较, 单地区多指标）
+        self.assertEqual(self.check_question('2012年国内游客周转量同比增长了？'), ['areas_g_compare'])
+        self.assertEqual(self.check_question('2012年国内游客周转量同比下降了多少？'), ['areas_g_compare'])
+        self.assertEqual(self.check_question('2012年国内游客周转量和货邮周转量同比变化了多少？'), ['areas_g_compare'])
+        # 反例
+        self.assertEqual(self.check_question('2012年国内游客周转量和国际货邮周转量同比变化了多少？'), [])
+        self.assertEqual(self.check_question('2012年国内游客周转量同比13年变化了多少？'), [])
+
+    def test_areas_2_compare(self):
+        self.assertEqual(self.check_question('11年港澳台运输总周转量是12年的多少倍？'), ['areas_2m_compare'])
+        self.assertEqual(self.check_question('12年的是11年港澳台运输总周转量的多少倍？'), ['areas_2m_compare'])
+        self.assertEqual(self.check_question('12年港澳台运输总周转量占11年百分之几？'), ['areas_2m_compare'])
+        self.assertEqual(self.check_question('12年港澳台运输总周转量是11年比例？'), ['areas_2m_compare'])
+
+        self.assertEqual(self.check_question('2011年国内游客周转量比一二年多多少？'), ['areas_2n_compare'])
+        self.assertEqual(self.check_question('2012年港澳台游客周转量比上一年的少多少？'), ['areas_2n_compare'])
+        self.assertEqual(self.check_question('2011年港澳台与国内的游客周转量相比12降低多少？'), ['areas_2n_compare'])
+        self.assertEqual(self.check_question('2011年港澳台的游客周转量同2012相比降低多少？'), ['areas_2n_compare'])
+        self.assertEqual(self.check_question('2012年的港澳台与去年相比，游客周转量降低多少？'), ['areas_2n_compare'])
+        # 反例
+        self.assertEqual(self.check_question('2012年港澳台游客周转量比上一年的货邮周转量少多少？'), [])
 
     # 指标的地区组成
     def test_area_compose(self):
