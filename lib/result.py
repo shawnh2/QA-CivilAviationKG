@@ -22,7 +22,7 @@ class Result(object):
     def __contains__(self, type_name: str):
         return type_name in self.region_wds_types
 
-    def is_null(self):
+    def __bool__(self):
         return self.region_wds == {}
 
     def count(self, type_name: str = None):

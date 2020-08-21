@@ -56,7 +56,7 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2011年的货邮周转量是'), ['index_value'])
 
     # 指标与总指标的比较
-    def test_index_overall(self):
+    def test_index_1_overall(self):
         self.assertEqual(self.check_question('2011年的游客周转量占总体多少？'), ['index_overall'])
         self.assertEqual(self.check_question('2011年的游客周转量占父指标多少份额？'), ['index_overall'])
         self.assertEqual(self.check_question('2011年的游客周转量是总体的多少倍？'), ['index_overall'])
@@ -66,6 +66,13 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2011年游客周转量占有总额的多少比例？'), ['index_overall'])
         # 反例
         self.assertEqual(self.check_question('2011年总体是货邮周转量的百分之几？'), [])
+
+    def test_index_2_overall(self):
+        self.assertEqual(self.check_question('2012年游客周转量占总体的百分比比去年变化多少？'), ['index_2_overall'])
+        self.assertEqual(self.check_question('2012年游客周转量占总体的百分比，相比11年变化多少？'), ['index_2_overall'])
+        self.assertEqual(self.check_question('2012年相比11年，游客周转量占总体的百分比变化多少？'), ['index_2_overall'])
+        self.assertEqual(self.check_question('2012年的游客周转量占总计比例比去年增加多少？'), ['index_2_overall'])
+        self.assertEqual(self.check_question('2013年的游客周转量占父级的倍数比11年降低多少？'), ['index_2_overall'])
 
     # 指标同类之间的比较
     def test_indexes_1_compare(self):
@@ -125,12 +132,19 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('11年国际方面运输总周转量是多少？'), ['area_value'])
 
     # 地区指标与总指标的比较
-    def test_area_overall(self):
+    def test_area_1_overall(self):
         self.assertEqual(self.check_question('11年国内的运输总周转量占总体的百分之几？'), ['area_overall'])
         self.assertEqual(self.check_question('11年国际运输总周转量占总值的多少？'), ['area_overall'])
         self.assertEqual(self.check_question('11年港澳台运输总周转量是全体的多少倍？'), ['area_overall'])
         # 反例
         self.assertEqual(self.check_question('11年父级是港澳台运输总周转量的多少倍？'), [])
+
+    def test_area_2_overall(self):
+        self.assertEqual(self.check_question('2012年国内的游客周转量占总体的百分比比去年变化多少？'), ['area_2_overall'])
+        self.assertEqual(self.check_question('2012年国际游客周转量占总体的百分比，相比11年变化多少？'), ['area_2_overall'])
+        self.assertEqual(self.check_question('2012年相比11年，港澳台游客周转量占总体的百分比变化多少？'), ['area_2_overall'])
+        self.assertEqual(self.check_question('2012年的国内游客周转量占总计比例比去年增加多少？'), ['area_2_overall'])
+        self.assertEqual(self.check_question('2013年的国际游客周转量占父级的倍数比11年降低多少？'), ['area_2_overall'])
 
     # 地区指标与地区指标的比较
     def test_areas_1_compare(self):

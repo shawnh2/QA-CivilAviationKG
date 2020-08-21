@@ -73,7 +73,7 @@ class QuestionClassifier:
 
     def classify(self, question: str):
         result = self.question_filter(question)
-        if result.is_null():
+        if bool(result):
             return None
         try:
             self._classify_tree(result)
@@ -179,8 +179,18 @@ class QuestionClassifier:
 
             # 指标
             if 'index' in result:
+                # 上级占比变化
+                if check_regexp(question, NumberCmp2[0], NumberCmp2[1], functions=[
+                    lambda x: check_contain(self.parent_index_rwds, x[0])
+                ]*2):
+                    if 'area' not in result:
+                        result.add_qtype('index_2_overall')
+                    elif check_regexp(question, NumberCmp2[0], NumberCmp2[1], functions=[
+                        lambda x: check_contain(result['area'], x[0])
+                    ]*2):
+                        result.add_qtype('area_2_overall')
                 # 比较数值
-                if check_regexp(question, *NumberCmp2, functions=[
+                elif check_regexp(question, *NumberCmp2, functions=[
                     lambda x: check_contain(result['index'], x[0]),
                     lambda x: check_contain(result['index'], x[0]),
                     lambda x: check_contain(result['index'], x[0][-1])
