@@ -219,7 +219,24 @@ class QuestionClassifier:
 
         # 问题与多个年份相关
         elif year_count > 2:
-            pass
+            # 关于指标的变化趋势
+            if 'index' in result:
+                # 占上级的
+                if check_regexp(question, MultipleCmp1, functions=[
+                    lambda x: (check_contain(result['index'], x[0][0]) and
+                               check_contain(self.status_rwds, x[0][-1]) and
+                               check_contain(self.parent_index_rwds, x[0][-1]))
+                ]):
+                    if 'area' in result:
+                        result.add_qtype('areas_overall_trend')
+                    else:
+                        result.add_qtype('indexes_overall_trend')
+                # 值的
+                elif check_contain(self.status_rwds, question):
+                    if 'area' in result:
+                        result.add_qtype('areas_trend')
+                    else:
+                        result.add_qtype('indexes_trend')
 
         # 问题与年份无关
         else:

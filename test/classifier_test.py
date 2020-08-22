@@ -196,6 +196,31 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('11年运输总周转量组成地区情况'), ['area_compose'])
         self.assertEqual(self.check_question('11年运输总周转量和游客周转量的各组成地区情况'), ['area_compose'])
 
+    # 指标值变化(多年份)
+    def test_indexes_trend(self):
+        self.assertEqual(self.check_question('2011-13年运输总周转量的变化趋势如何？'), ['indexes_trend'])
+        self.assertEqual(self.check_question('2011-13年运输总周转量情况？'), ['indexes_trend'])
+        self.assertEqual(self.check_question('2011-13年运输总周转量值分布状况？'), ['indexes_trend'])
+        # 反例
+        self.assertEqual(self.check_question('2011-12年运输总周转量的变化趋势如何？'), [])
+
+    # 地区指标值变化(多年份)
+    def test_areas_trend(self):
+        self.assertEqual(self.check_question('2011-13年国内运输总周转量的变化趋势如何？'), ['areas_trend'])
+        self.assertEqual(self.check_question('2011-13年国际运输总周转量情况？'), ['areas_trend'])
+        self.assertEqual(self.check_question('2011-13年港澳台运输总周转量值分布状况？'), ['areas_trend'])
+
+    # 占总指标比的变化
+    def test_indexes_overall_trend(self):
+        self.assertEqual(self.check_question('2011-13年运输总周转量占总体的比例的变化形势？'), ['indexes_overall_trend'])
+        self.assertEqual(self.check_question('2011-13年运输总周转量占父级指标比的情况？'), ['indexes_overall_trend'])
+        self.assertEqual(self.check_question('2011-13年运输总周转量值占总比的分布状况？'), ['indexes_overall_trend'])
+
+    def test_areas_overall_trend(self):
+        self.assertEqual(self.check_question('2011-13年国内运输总周转量占总体的比例的变化形势？'), ['areas_overall_trend'])
+        self.assertEqual(self.check_question('2011-13年国际运输总周转量占父级指标比的情况？'), ['areas_overall_trend'])
+        self.assertEqual(self.check_question('2011-13年港澳台运输总周转量值占总比的分布状况？'), ['areas_overall_trend'])
+
 
 if __name__ == '__main__':
     unittest.main()
