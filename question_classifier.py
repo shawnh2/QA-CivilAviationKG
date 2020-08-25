@@ -171,7 +171,7 @@ class QuestionClassifier:
         # 问题与两个年份相关
         elif year_count == 2:
             # 目录与指标的变化情况
-            if len(result) == 2:
+            if result.count('year') == len(result):
                 if check_contain(self.catalog_rwds, question):
                     result.add_qtype('catalog_change')
                 elif check_contain(self.index_rwds, question):
@@ -219,6 +219,13 @@ class QuestionClassifier:
 
         # 问题与多个年份相关
         elif year_count > 2:
+            # 指标/目录变化趋势
+            if result.count('year') == len(result) and check_contain(self.status_rwds, question):
+                if check_contain(self.catalog_rwds, question):
+                    result.add_qtype('catalogs_change')
+                elif check_contain(self.index_rwds, question):
+                    result.add_qtype('indexes_change')
+
             # 关于指标的变化趋势
             if 'index' in result:
                 # 占上级的

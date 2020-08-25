@@ -221,6 +221,16 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2011-13年国际运输总周转量占父级指标比的情况？'), ['areas_overall_trend'])
         self.assertEqual(self.check_question('2011-13年港澳台运输总周转量值占总比的分布状况？'), ['areas_overall_trend'])
 
+    # 指标的变化
+    def test_indexes_change(self):
+        self.assertEqual(self.check_question('2011-13年指标变化情况？'), ['indexes_change'])
+        self.assertEqual(self.check_question('2011-13年指标变化趋势情况？'), ['indexes_change'])
+
+    # 目录的变化
+    def test_catalogs_change(self):
+        self.assertEqual(self.check_question('2011-13年目录变化情况？'), ['catalogs_change'])
+        self.assertEqual(self.check_question('2011-13年规范趋势情况变化？'), ['catalogs_change'])
+
 
 if __name__ == '__main__':
     unittest.main()
