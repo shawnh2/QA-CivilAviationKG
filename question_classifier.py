@@ -73,7 +73,7 @@ class QuestionClassifier:
 
     def classify(self, question: str):
         result = self.question_filter(question)
-        if bool(result):
+        if result.is_wds_null():
             return None
         try:
             self._classify_tree(result)
