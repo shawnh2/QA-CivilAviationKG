@@ -58,21 +58,31 @@ def year_complement(question: str) -> str:
     return complemented
 
 
-def index_complement(question: str, words: list):
-    """ 对问题中的指标进行模糊查询 """
+def index_complement(question: str, words: list, threshold: int = 3) -> tuple:
+    """对问题中的指标名词进行模糊查询并迭代返回最接近的项.
+
+    :param question: 问题
+    :param words: 查询范围(词集)
+    :param threshold: 最小的有效匹配长度
+    :return: 首次匹配结果
+    """
     charset = set("".join(words))
     pattern = re.compile(f'([{charset}]+)')
 
     for result in pattern.findall(question):
+        if len(result) < threshold:
+            continue
         scores = []
         for word in words:
             score = 0
             for c in result:
                 if c in word:
                     score += 1
-            scores.append(score*0.6 + score/len(word)*0.4)
+            scores.append(score)
         # 得分最高的最近似
         max_score = max(scores)
         if max_score > 0:
             indexes = [i for i, s in enumerate(scores) if s == max_score]
-            yield list(map(lambda i: words[i], indexes))
+            if len(indexes) >= threshold:
+                return [], result
+            return list(map(lambda i: words[i], indexes)), result

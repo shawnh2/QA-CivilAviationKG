@@ -11,7 +11,8 @@ class QCTest(unittest.TestCase):
     qc = QuestionClassifier()
 
     def check_question(self, question: str):
-        return self.qc.classify(question).question_types
+        res = self.qc.classify(question).question_types
+        return res if res else []
 
     # 年度发展状况
     def test_year_status(self):
@@ -230,6 +231,19 @@ class QCTest(unittest.TestCase):
     def test_catalogs_change(self):
         self.assertEqual(self.check_question('2011-13年目录变化情况？'), ['catalogs_change'])
         self.assertEqual(self.check_question('2011-13年规范趋势情况变化？'), ['catalogs_change'])
+
+    # 几个年份中的最值
+    def test_indexes_and_areas_max(self):
+        self.assertEqual(self.check_question('2011-13年运输总周转量最大值是？'), ['indexes_max'])
+        self.assertEqual(self.check_question('2011-13年运输总周转量最小值是哪一年？'), ['indexes_max'])
+        self.assertEqual(self.check_question('2011-13年国内运输总周转量最大值是？'), ['areas_max'])
+
+    # 何时开始统计此指标
+    def test_begin_stats(self):
+        self.assertEqual(self.check_question('哪年统计了航空严重事故征候？'), ['begin_stats'])
+        self.assertEqual(self.check_question('在哪一年出现了航空公司营业收入数据？'), ['begin_stats'])
+        self.assertEqual(self.check_question('航空事故征候数据统计出现在哪一年？'), ['begin_stats'])
+        self.assertEqual(self.check_question('运输周转量数据统计出现在哪一年？'), ['begin_stats'])
 
 
 if __name__ == '__main__':

@@ -28,6 +28,7 @@ class QuestionClassifier:
         # 问句疑问词
         self.exist_qwds = read_words(self.qwds_root.format('Exist'))
         self.value_qwds = read_words(self.qwds_root.format('Value'))
+        self.when_qwds = read_words(self.qwds_root.format('When'))
 
         # 指代词
         self.status_rwds = read_words(self.rwds_root.format('Status'))
@@ -36,6 +37,7 @@ class QuestionClassifier:
         self.child_index_rwds = read_words(self.rwds_root.format('ChildIndex'))
         self.location_rwds = read_words(self.rwds_root.format('Location'))
         self.index_rwds = read_words(self.rwds_root.format('Index'))
+        self.max_rwds = read_words(self.rwds_root.format('Max'))
 
         # 尾词
         self.is_twds = read_words(self.twds_root.format('Is'))
@@ -62,13 +64,22 @@ class QuestionClassifier:
 
     def question_filter(self, question: str) -> Result:
         question = question.replace(' ', '')
-        # 先过滤年份
+        # 过滤年份
         filtered_question = year_complement(question)
-        # 再过滤特征词
+        # 过滤特征词
         region_wds = []
+        region_dict = {}
         for w in self.region_tree.iter(filtered_question):
             region_wds.append(w[1][1])
-        region_dict = {w: self.word_type_dict.get(w) for w in region_wds}
+        if region_wds:
+            region_dict = {w: self.word_type_dict.get(w) for w in region_wds}
+        # 过滤指标(上述提取失败后)
+        else:
+            new_words, old_word = index_complement(filtered_question, self.index_wds)
+            if new_words:
+                filtered_question = filtered_question.replace(old_word, ','.join(new_words))
+                region_dict = {w: self.word_type_dict.get(w) for w in new_words}
+
         return Result(region_dict, question, filtered_question)
 
     def classify(self, question: str):
@@ -129,7 +140,7 @@ class QuestionClassifier:
                         lambda x: check_list_contain(result['index'], x[0], 0, -1)
                     ]):
                         result.add_qtype('indexes_m_compare')  # 比较倍数关系
-                    elif check_regexp(question, NumberCmp1, functions=[
+                    if check_regexp(question, NumberCmp1, functions=[
                         lambda x: (check_list_contain(result['index'], x[0], 0, -1) or
                                    check_all_contain(result['index'], x[0][0]))
                     ]):
@@ -141,7 +152,7 @@ class QuestionClassifier:
                                    check_list_contain(result['index'], x[0], 0))
                     ]):
                         result.add_qtype('areas_m_compare')  # 比较倍数关系
-                    elif check_regexp(question, NumberCmp1, functions=[
+                    if check_regexp(question, NumberCmp1, functions=[
                         lambda x: ((check_list_contain(result['area'], x[0], 0, -1) and
                                     check_contain(result['index'], x[0][0]))
                                    or
@@ -179,43 +190,45 @@ class QuestionClassifier:
 
             # 指标
             if 'index' in result:
-                # 上级占比变化
-                if check_regexp(question, NumberCmp2[0], NumberCmp2[1], functions=[
-                    lambda x: check_contain(self.parent_index_rwds, x[0])
-                ]*2):
-                    if 'area' not in result:
-                        result.add_qtype('index_2_overall')
-                    elif check_regexp(question, NumberCmp2[0], NumberCmp2[1], functions=[
-                        lambda x: check_contain(result['area'], x[0])
+                if check_contain(self.parent_index_rwds, question):
+                    # 上级占比变化
+                    if check_regexp(question, NumberCmp2[0], NumberCmp2[1], functions=[
+                        lambda x: check_contain(self.parent_index_rwds, x[0])
                     ]*2):
-                        result.add_qtype('area_2_overall')
-                # 比较数值
-                elif check_regexp(question, *NumberCmp2, functions=[
-                    lambda x: check_contain(result['index'], x[0]),
-                    lambda x: check_contain(result['index'], x[0]),
-                    lambda x: check_contain(result['index'], x[0][-1])
-                ]):
-                    if 'area' not in result:  # 不涉及地区
-                        result.add_qtype('indexes_2n_compare')
-                    else:  # 涉及地区
-                        if result.count('index') == 1:  # 单指标下不同地区比较
-                            if check_regexp(question, *NumberCmp2, functions=[
-                                lambda x: check_contain(result['area'], x[0]),
-                                lambda x: check_contain(result['area'], x[0]),
-                                lambda x: check_contain(result['area'], x[0][0]),
+                        if 'area' not in result:
+                            result.add_qtype('index_2_overall')
+                        if check_regexp(question, NumberCmp2[0], NumberCmp2[1], functions=[
+                            lambda x: check_contain(result['area'], x[0])
+                        ]*2):
+                            result.add_qtype('area_2_overall')
+                else:
+                    # 比较数值
+                    if check_regexp(question, *NumberCmp2, functions=[
+                        lambda x: check_contain(result['index'], x[0]),
+                        lambda x: check_contain(result['index'], x[0]),
+                        lambda x: check_contain(result['index'], x[0][-1])
+                    ]):
+                        if 'area' not in result:  # 不涉及地区
+                            result.add_qtype('indexes_2n_compare')
+                        else:  # 涉及地区
+                            if result.count('index') == 1:  # 单指标下不同地区比较
+                                if check_regexp(question, *NumberCmp2, functions=[
+                                    lambda x: check_contain(result['area'], x[0]),
+                                    lambda x: check_contain(result['area'], x[0]),
+                                    lambda x: check_contain(result['area'], x[0][0]),
+                                ]):
+                                    result.add_qtype('areas_2n_compare')
+                    # 比较倍数
+                    if check_regexp(question, MultipleCmp2, functions=[
+                        lambda x: check_list_any_contain(result['index'], x[0], 0, -1)
+                    ]):
+                        if 'area' not in result:  # 不涉及地区
+                            result.add_qtype('indexes_2m_compare')
+                        else:  # 涉及地区
+                            if check_regexp(question, MultipleCmp2, functions=[
+                                lambda x: check_list_any_contain(result['area'], x[0], 0, -1)
                             ]):
-                                result.add_qtype('areas_2n_compare')
-                # 比较倍数
-                elif check_regexp(question, MultipleCmp2, functions=[
-                    lambda x: check_list_any_contain(result['index'], x[0], 0, -1)
-                ]):
-                    if 'area' not in result:  # 不涉及地区
-                        result.add_qtype('indexes_2m_compare')
-                    else:  # 涉及地区
-                        if check_regexp(question, MultipleCmp2, functions=[
-                            lambda x: check_list_any_contain(result['area'], x[0], 0, -1)
-                        ]):
-                            result.add_qtype('areas_2m_compare')
+                                result.add_qtype('areas_2m_compare')
 
         # 问题与多个年份相关
         elif year_count > 2:
@@ -239,12 +252,19 @@ class QuestionClassifier:
                     else:
                         result.add_qtype('indexes_overall_trend')
                 # 值的
-                elif check_contain(self.status_rwds, question):
+                if check_contain(self.status_rwds, question) and not check_contain(self.parent_index_rwds, question):
                     if 'area' in result:
                         result.add_qtype('areas_trend')
                     else:
                         result.add_qtype('indexes_trend')
+                # 最值
+                if check_contain(self.max_rwds, question):
+                    if 'area' in result:
+                        result.add_qtype('areas_max')
+                    else:
+                        result.add_qtype('indexes_max')
 
         # 问题与年份无关
         else:
-            pass
+            if 'index' in result and check_contain(self.when_qwds, question):
+                result.add_qtype('begin_stats')
