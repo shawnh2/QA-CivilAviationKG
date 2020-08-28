@@ -1,3 +1,5 @@
+from lib.chain import TranslationChain
+
 
 class Result(object):
     """ 保存查询的结果 """
@@ -39,7 +41,7 @@ class Result(object):
     def add_qtype(self, question_type):
         self.question_types.append(question_type)
 
-    def add_sql(self, qt: str, sqls: list):
+    def add_sql(self, qt: str, sqls: TranslationChain):
         self.sqls[qt] = sqls
 
     def reverse_region_dict(self):

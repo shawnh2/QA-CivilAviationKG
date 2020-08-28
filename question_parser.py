@@ -1,66 +1,91 @@
 # 问题解析器
-from functools import partial
+from copy import deepcopy
 
 from lib.result import Result
-
-
-translation_dict = {}
-
-
-def translation(func):
-    """ 用于解析器翻译sql语句函数的装饰器 """
-    translation_dict[func.__name__[6:]] = func
-
-
-@translation  # 年度总体状况
-def trans_year_status(years):
-    return [f'match (y:Year) where y.name="{y}" return y.info' for y in years]
-
-
-@translation  # 年度目录状况
-def trans_catalog_status(years, catalogs):
-    return [f'match (y:Year)-[r:info]->(c:Catalog) where y.name="{y}" and c.name="{c}" return r.info'
-            for y in years for c in catalogs]
-
-
-@translation  # 年度目录包含哪些
-def trans_exist_catalog(years):
-    return [f'match (y:Year)-[r:include]->(c:Catalog) where y.name="{y}" return c.name' for y in years]
-
-
-@translation  # 指标值
-def trans_index_value(years, indexes):
-    return [f'match (y:Year)-[r:value]->(i:Index) where y.name="{y}" and i.name="{i}" return r.value, r.unit'
-            for y in years for i in indexes]
+from lib.chain import TranslationChain
 
 
 class QuestionParser:
 
+    def __init__(self):
+        self.chain = TranslationChain()
+
+        # 基本sql语句, 供翻译方法使用
+        self.sql_Y_status = 'match (y:Year) where y.name="{y}" return y.info'
+        self.sql_C_status = 'match (y:Year)-[r:info]->(c:Catalog) where y.name="{y}" and c.name="{c}" return r.info'
+        self.sql_C_exist = 'match (y:Year)-[r:include]->(c:Catalog) where y.name="{y}" return c.name'
+        self.sql_I_value = 'match (y:Year)-[r:value]->(i:Index) where y.name="{y}" and i.name="{i}" return r.value,r.unit'
+        self.sql_A_value = 'match (y:Year)-[r:`{i}`]->(n:Area) where y.name="{y}" and n.name="{a}" return r.value, r.unit,r.repr'
+
+        self.sql_find_I_parent = 'match(n:Index)-[r:contain]->(m:Index) where m.name="{i}" return n.name'
+        self.sql_find_A_parent = 'match(n:Area)-[r:contain]->(n:Area) where m.name="{a}" return n.name'
+        self.sql_find_I_child = 'match(n:Index)-[r:contain]->(m:Index) where n.name="{i}" return m.name'
+        self.sql_find_A_I = 'match (i:Index)-[r:locate]->(a:Area) where i.name="{i}" return a.name'
+
     def parse(self, result: Result) -> Result:
         for qt in result.question_types:
-            sql = []
             # 查询语句翻译
             if qt == 'year_status':
-                sql = self._sql_translate(qt, result['year'])
+                self.trans_year_status(result['year'])
             elif qt == 'catalog_status':
-                sql = self._sql_translate(qt, result['year'], result['catalog'])
+                self.trans_catalog_status(result['year'], result['catalog'])
             elif qt == 'exist_catalog':
-                sql = self._sql_translate(qt, result['year'])
-            elif qt == 'index_value':
-                sql = self._sql_translate(qt, result['year'], result['index'])
-            elif qt == '':
-                pass
+                self.trans_exist_catalog(result['year'])
+            elif qt in ('index_value', 'indexes_m_compare', 'indexes_n_compare'):
+                self.trans_index_value(result['year'], result['index'])
+            elif qt == 'index_overall':
+                self.trans_index_overall(result['year'], result['index'])
+            elif qt == 'index_compose':
+                self.trans_index_compose(result['year'], result['index'])
+            elif qt in ('area_value', 'areas_m_compare', 'areas_n_compare'):
+                self.trans_area_value(result['year'], result['area'], result['index'])
+            elif qt == 'area_overall':
+                self.trans_area_overall(result['year'], result['area'], result['index'])
+            elif qt == 'area_compose':
+                self.trans_area_compose(result['year'], result['index'])
 
-            result.add_sql(qt, sql)
-            print(qt, sql)
+            result.add_sql(qt, deepcopy(self.chain))
+            self.chain.reset()
         return result
 
-    def _sql_translate(self, question_type: str, *args):
-        # 查找对应翻译函数
-        sql = []
-        if not all(args):
-            return sql
-        translate_method = translation_dict.get(question_type)
-        if translate_method:
-            sql = partial(translate_method, *args)()
-        return sql
+    # 年度总体状况
+    def trans_year_status(self, years):
+        self.chain.make([self.sql_Y_status.format(y=years[0])])
+
+    # 年度目录状况
+    def trans_catalog_status(self, years, catalogs):
+        self.chain.make([self.sql_C_status.format(y=years[0], c=c) for c in catalogs])
+
+    # 年度目录包含哪些
+    def trans_exist_catalog(self, years):
+        self.chain.make([self.sql_C_exist.format(y=years[0])])
+
+    # 指标值
+    def trans_index_value(self, years, indexes):
+        self.chain.make([self.sql_I_value.format(y=years[0], i=i) for i in indexes])
+
+    # 指标占总比
+    def trans_index_overall(self, years, indexes):
+        self.chain.make([self.sql_I_value.format(y=years[0], i=i) for i in indexes])\
+                  .then([self.sql_find_I_parent.format(i=i) for i in indexes])\
+                  .then([self.sql_I_value.format(y=years[0], i='@')])
+
+    # 指标组成
+    def trans_index_compose(self, years, indexes):
+        self.chain.make([self.sql_find_I_child.format(i=i) for i in indexes])\
+                  .then([self.sql_I_value.format(y=years[0], i='@')])
+
+    # 地区指标值
+    def trans_area_value(self, years, areas, indexes):
+        self.chain.make([self.sql_A_value.format(y=years[0], i=i, a=a) for a in areas for i in indexes])
+
+    # 地区指标占总比
+    def trans_area_overall(self, years, areas, indexes):
+        self.chain.make([self.sql_A_value.format(y=years[0], i=i, a=a) for a in areas for i in indexes])\
+                  .then([self.sql_find_A_parent.format(a=a) for a in areas])\
+                  .then([self.sql_A_value.format(y=years[0], i=i, a='@') for i in indexes])
+
+    # 地区指标组成
+    def trans_area_compose(self, years, indexes):
+        self.chain.make([self.sql_find_A_I.format(i=i) for i in indexes])\
+                  .then([self.sql_A_value.format(y=years[0], i=i, a='@') for i in indexes])
