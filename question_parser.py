@@ -2,6 +2,7 @@
 from copy import deepcopy
 
 from lib.result import Result
+from lib.utils import InterruptAnswer
 from lib.chain import TranslationChain
 from lib.errors import QuestionYearOverstep
 
@@ -36,8 +37,8 @@ class QuestionParser:
                 self.trans_index_value(result['year'], result['index'])
             elif qt == 'index_overall':
                 self.trans_index_overall(result['year'], result['index'])
-            elif qt == 'index_2_overall':
-                self.trans_index_2_overall(result['year'], result['index'])
+            elif qt in ('index_2_overall', 'indexes_overall_trend'):
+                self.trans_indexes_overall(result['year'], result['index'])
             elif qt == 'index_compose':
                 self.trans_index_compose(result['year'], result['index'])
             elif qt in ('indexes_2m_compare', 'indexes_2n_compare'):
@@ -48,14 +49,21 @@ class QuestionParser:
                 self.trans_area_value(result['year'], result['area'], result['index'])
             elif qt == 'area_overall':
                 self.trans_area_overall(result['year'], result['area'], result['index'])
-            elif qt == 'area_2_overall':
-                self.trans_area_2_overall(result['year'], result['area'], result['index'])
+            elif qt in ('area_2_overall', 'areas_overall_trend'):
+                self.trans_areas_overall(result['year'], result['area'], result['index'])
             elif qt == 'area_compose':
                 self.trans_area_compose(result['year'], result['index'])
             elif qt in ('areas_2m_compare', 'areas_2n_compare'):
                 self.trans_areas_mn_compare(result['year'], result['area'], result['index'])
             elif qt == 'areas_g_compare':
                 self.trans_areas_g_compare(result['year'], result['area'], result['index'])
+            elif qt in ('indexes_trend', 'indexes_max'):
+                self.trans_indexes_value(result['year'], result['index'])
+            elif qt in ('areas_trend', 'areas_max'):
+                self.trans_areas_value(result['year'], result['area'], result['index'])
+            elif qt in ('index_change', 'indexes_change', 'catalog_change', 'catalogs_change'):
+                # 此类问题可通过本地查询提前返回答案，无需查询数据库
+                raise InterruptAnswer()
 
             result.add_sql(qt, deepcopy(self.chain))
             self.chain.reset()
@@ -77,6 +85,10 @@ class QuestionParser:
     def trans_index_value(self, years, indexes):
         self.chain.make([self.sql_I_value.format(y=years[0], i=i) for i in indexes])
 
+    # 多个年份指标值变化趋势
+    def trans_indexes_value(self, years, indexes):
+        self.chain.make([[self.sql_I_value.format(y=y, i=i) for y in years] for i in indexes])
+
     # 两个年份下的指标值的各种比较
     def trans_indexes_mn_compare(self, years, indexes):
         self.chain.make([[self.sql_I_value.format(y=y, i=i) for y in years] for i in indexes])
@@ -94,8 +106,8 @@ class QuestionParser:
                   .then([self.sql_find_I_parent.format(i=i) for i in indexes])\
                   .then([self.sql_I_value.format(y=years[0], i='@')])
 
-    # 两个年份指标占总比的变化
-    def trans_index_2_overall(self, years, indexes):
+    # 两或多个年份指标占总比的变化
+    def trans_indexes_overall(self, years, indexes):
         self.chain.make([[self.sql_I_value.format(y=y, i=i) for y in years] for i in indexes])\
                   .then([self.sql_find_I_parent.format(i=i) for i in indexes])\
                   .then([self.sql_I_value.format(y=y, i='@') for y in years])
@@ -108,6 +120,9 @@ class QuestionParser:
     # 地区指标值
     def trans_area_value(self, years, areas, indexes):
         self.chain.make([self.sql_A_value.format(y=years[0], i=i, a=a) for a in areas for i in indexes])
+
+    def trans_areas_value(self, years, areas, indexes):
+        self.chain.make([[[self.sql_A_value.format(y=y, i=i, a=a) for y in years] for a in areas] for i in indexes])
 
     # 两个年份下地区的指标值的各种比较
     def trans_areas_mn_compare(self, years, areas, indexes):
@@ -126,8 +141,8 @@ class QuestionParser:
                   .then([self.sql_find_A_parent.format(a=a) for a in areas])\
                   .then([self.sql_A_value.format(y=years[0], i=i, a='@') for i in indexes])
 
-    # 地区两个年份指标占总比的变化
-    def trans_area_2_overall(self, years, areas, indexes):
+    # 地区两或多个年份指标占总比的变化
+    def trans_areas_overall(self, years, areas, indexes):
         self.chain.make([[[self.sql_A_value.format(y=y, i=i, a=a) for y in years] for a in areas] for i in indexes])\
                   .then([self.sql_find_A_parent.format(a=a) for a in areas])\
                   .then([[self.sql_A_value.format(y=y, i=i, a='@') for y in years] for i in indexes])
