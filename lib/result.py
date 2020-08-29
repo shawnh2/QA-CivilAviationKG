@@ -13,7 +13,6 @@ class Result(object):
         self.filtered_question = filtered_q
         # 一些结果
         self.question_types = []
-        self.messages = []
         self.sqls = {}
 
     def __getitem__(self, type_name: str):
@@ -34,9 +33,6 @@ class Result(object):
     def count(self, type_name: str = None):
         """返回某个特征词类型的个数"""
         return self.region_wds_types.count(type_name)
-
-    def add_msg(self, message: str):
-        self.messages.append(message)
 
     def add_qtype(self, question_type):
         self.question_types.append(question_type)

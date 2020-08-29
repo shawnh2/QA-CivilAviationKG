@@ -6,7 +6,7 @@ from lib.regexp import *
 from lib.result import Result
 from lib.utils import read_words
 from lib.complement import year_complement, index_complement
-from lib.errors import QuestionError, QuestionOrderError
+from lib.errors import QuestionOrderError
 
 
 class QuestionClassifier:
@@ -86,13 +86,8 @@ class QuestionClassifier:
         result = self.question_filter(question)
         if result.is_wds_null():
             return None
-        try:
-            self._classify_tree(result)
-        except QuestionError as err:
-            # 收集错误问题的提示
-            result.add_msg(err.args[0])
-        finally:
-            return result
+        self._classify_tree(result)
+        return result
 
     def _classify_tree(self, result: Result):
         # 收集实体类型
@@ -197,7 +192,7 @@ class QuestionClassifier:
                     ]*2):
                         if 'area' not in result:
                             result.add_qtype('index_2_overall')
-                        if check_regexp(question, NumberCmp2[0], NumberCmp2[1], functions=[
+                        elif check_regexp(question, NumberCmp2[0], NumberCmp2[1], functions=[
                             lambda x: check_contain(result['area'], x[0])
                         ]*2):
                             result.add_qtype('area_2_overall')

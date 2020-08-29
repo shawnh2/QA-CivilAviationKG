@@ -2,6 +2,7 @@ import os
 import unittest
 
 from question_classifier import QuestionClassifier
+from lib.errors import QuestionError
 
 os.chdir(os.path.join(os.getcwd(), '..'))
 
@@ -11,8 +12,11 @@ class QCTest(unittest.TestCase):
     qc = QuestionClassifier()
 
     def check_question(self, question: str):
-        res = self.qc.classify(question).question_types
-        return res if res else []
+        try:
+            res = self.qc.classify(question).question_types
+            return res if res else []
+        except QuestionError:
+            return []
 
     # 年度发展状况
     def test_year_status(self):

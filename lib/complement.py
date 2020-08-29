@@ -86,3 +86,4 @@ def index_complement(question: str, words: list, threshold: int = 3) -> tuple:
             if len(indexes) >= threshold:
                 return [], result
             return list(map(lambda i: words[i], indexes)), result
+    return None, None
