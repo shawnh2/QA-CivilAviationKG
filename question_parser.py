@@ -117,18 +117,18 @@ class QuestionParser:
     def trans_index_overall(self, years, indexes):
         self.chain.make([self.sql_I_value.format(y=years[0], i=i) for i in indexes])\
                   .then([self.sql_find_I_parent.format(i=i) for i in indexes])\
-                  .then([self.sql_I_value.format(y=years[0], i='@')])
+                  .then([self.sql_I_value.format(y=years[0], i='{}')])
 
     # 两或多个年份指标占总比的变化
     def trans_indexes_overall(self, years, indexes):
         self.chain.make([[self.sql_I_value.format(y=y, i=i) for y in years] for i in indexes])\
                   .then([self.sql_find_I_parent.format(i=i) for i in indexes])\
-                  .then([self.sql_I_value.format(y=y, i='@') for y in years])
+                  .then([self.sql_I_value.format(y=y, i='{}') for y in years])
 
     # 指标组成
     def trans_index_compose(self, years, indexes):
         self.chain.make([self.sql_find_I_child.format(i=i) for i in indexes])\
-                  .then([self.sql_I_value.format(y=years[0], i='@')])
+                  .then([self.sql_I_value.format(y=years[0], i='{}')])
 
     # 地区指标值
     def trans_area_value(self, years, areas, indexes):
@@ -139,7 +139,7 @@ class QuestionParser:
 
     # 两个年份下地区的指标值的各种比较
     def trans_areas_mn_compare(self, years, areas, indexes):
-        self.chain.make([[[[self.sql_A_value.format(y=y, a=a, i=i) for y in years] for a in areas]] for i in indexes])
+        self.chain.make([[[self.sql_A_value.format(y=y, a=a, i=i) for y in years] for a in areas] for i in indexes])
 
     # 地区指标值同比比较
     def trans_areas_g_compare(self, years, areas, indexes):
@@ -152,18 +152,18 @@ class QuestionParser:
     def trans_area_overall(self, years, areas, indexes):
         self.chain.make([self.sql_A_value.format(y=years[0], i=i, a=a) for a in areas for i in indexes])\
                   .then([self.sql_find_A_parent.format(a=a) for a in areas])\
-                  .then([self.sql_A_value.format(y=years[0], i=i, a='@') for i in indexes])
+                  .then([self.sql_A_value.format(y=years[0], i=i, a='{}') for i in indexes])
 
     # 地区两或多个年份指标占总比的变化
     def trans_areas_overall(self, years, areas, indexes):
         self.chain.make([[[self.sql_A_value.format(y=y, i=i, a=a) for y in years] for a in areas] for i in indexes])\
                   .then([self.sql_find_A_parent.format(a=a) for a in areas])\
-                  .then([[self.sql_A_value.format(y=y, i=i, a='@') for y in years] for i in indexes])
+                  .then([[self.sql_A_value.format(y=y, i=i, a='{}') for y in years] for i in indexes])
 
     # 地区指标组成
     def trans_area_compose(self, years, indexes):
         self.chain.make([self.sql_find_A_I.format(i=i) for i in indexes])\
-                  .then([self.sql_A_value.format(y=years[0], i=i, a='@') for i in indexes])
+                  .then([self.sql_A_value.format(y=years[0], i=i, a='{}') for i in indexes])
 
     # 何时开始统计此项指标
     def trans_begin_stats(self, indexes):

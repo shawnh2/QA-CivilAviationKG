@@ -16,14 +16,6 @@ class TranslationChain:
         self._offset += 1
         return self.make(sqls)
 
-    def offset(self):
-        """ 置偏移 """
-        self._offset += 1
-        return self
-
-    def get(self, offset: int):
-        return self._chain.get(offset)
-
     def reset(self):
         """ 重置目前的链 """
         self._chain.clear()
@@ -31,3 +23,7 @@ class TranslationChain:
 
     def __repr__(self):
         return str(self._chain)
+
+    def __iter__(self):
+        for n in range(len(self._chain)):
+            yield self._chain[n]
