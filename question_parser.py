@@ -2,7 +2,6 @@
 from copy import deepcopy
 
 from lib.result import Result
-from lib.utils import InterruptAnswer
 from lib.chain import TranslationChain
 from lib.errors import QuestionYearOverstep
 
@@ -23,6 +22,9 @@ class QuestionParser:
         self.sql_find_A_parent = 'match(n:Area)-[r:contain]->(n:Area) where m.name="{a}" return n.name'
         self.sql_find_I_child = 'match(n:Index)-[r:contain]->(m:Index) where n.name="{i}" return m.name'
         self.sql_find_A_I = 'match (i:Index)-[r:locate]->(a:Area) where i.name="{i}" return a.name'
+        self.sql_find_Is = 'match (y:Year)-[r:value]->(i:Index) where y.name="{y}" return i.name'
+        self.sql_find_Cs = 'match (y:Year)-[r:include]->(c:Catalog) where y.name="{y}" return c.name'
+        self.sql_find_begin_stats_Ys = 'match (y:Year)-[r:value]->(i:Index) where i.name="{i}" return y.name'
 
     def parse(self, result: Result) -> Result:
         for qt in result.question_types:
@@ -61,9 +63,12 @@ class QuestionParser:
                 self.trans_indexes_value(result['year'], result['index'])
             elif qt in ('areas_trend', 'areas_max'):
                 self.trans_areas_value(result['year'], result['area'], result['index'])
-            elif qt in ('index_change', 'indexes_change', 'catalog_change', 'catalogs_change'):
-                # 此类问题可通过本地查询提前返回答案，无需查询数据库
-                raise InterruptAnswer()
+            elif qt in ('index_change', 'indexes_change'):
+                self.trans_index_change(result['year'])
+            elif qt in ('catalog_change', 'catalogs_change'):
+                self.trans_catalog_change(result['year'])
+            elif qt == 'begin_stats':
+                self.trans_begin_stats(result['index'])
 
             result.add_sql(qt, deepcopy(self.chain))
             self.chain.reset()
@@ -76,6 +81,14 @@ class QuestionParser:
     # 年度目录状况
     def trans_catalog_status(self, years, catalogs):
         self.chain.make([self.sql_C_status.format(y=years[0], c=c) for c in catalogs])
+
+    # 指标变化情况
+    def trans_index_change(self, years):
+        self.chain.make([self.sql_find_Is.format(y=y) for y in years])
+
+    # 目录变化情况
+    def trans_catalog_change(self, years):
+        self.chain.make([self.sql_find_Cs.format(y=y) for y in years])
 
     # 年度目录包含哪些
     def trans_exist_catalog(self, years):
@@ -151,3 +164,7 @@ class QuestionParser:
     def trans_area_compose(self, years, indexes):
         self.chain.make([self.sql_find_A_I.format(i=i) for i in indexes])\
                   .then([self.sql_A_value.format(y=years[0], i=i, a='@') for i in indexes])
+
+    # 何时开始统计此项指标
+    def trans_begin_stats(self, indexes):
+        self.chain.make([self.sql_find_begin_stats_Ys.format(i=i) for i in indexes])
