@@ -14,7 +14,8 @@ class QPTest:
         res = self.qc.classify(question)
         if res.is_qt_null():
             print('[pass]', question)
-        print(self.qp.parse(res).sqls)
+        else:
+            print(self.qp.parse(res).sqls)
 
     def test(self):
         self.test_year_status()
