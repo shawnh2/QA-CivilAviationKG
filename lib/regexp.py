@@ -17,10 +17,12 @@ NumberCmp2 = (rf'[\d]+年*的*([\D]+)(?<!同)比[\d]+年*的*{NumberChange}',
 GrowthCmp = r'[\d]+年*的*([\D]*)同比[增减上下升降变]+'
 
 # 年份
-Year = r'[\d零一二两三四五六七八九十千壹贰叁肆伍陆柒捌玖拾]+年*'
+Year = r'[\d零一二两三四五六七八九十千壹贰叁肆伍陆柒捌玖拾]+'
 FormerYear = r'(去|大*前一*|上*一*)年'
 # 年份范围
-RangeYear = rf'({Year}([直至到往\-~—])*{Year})'
+RangeYear = rf'({Year}年*([直至到往\-~—])*{Year})(?!年*前)'
 # 年份指代
-RefsYear = (rf'({Year})[\D]*比{FormerYear}',
-            rf'({Year})[\D]*[与和同]+{FormerYear}相*比较*')
+RefsYear = (rf'({Year})年*[\D]*比{FormerYear}',
+            rf'({Year})年*[\D]*[与和同]+{FormerYear}相*比较*',
+            rf'({Year})年*[\D]*[与和同]+({Year}年前)相*比较*',
+            rf'({Year})年*[\D]*[与和同]+(前{Year}年)相*比较*')

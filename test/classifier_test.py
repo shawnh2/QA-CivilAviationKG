@@ -113,7 +113,7 @@ class QCTest(unittest.TestCase):
     def test_indexes_2_compare(self):
         self.assertEqual(self.check_question('2011年游客周转量是12年的百分之几？'), ['indexes_2m_compare'])
         self.assertEqual(self.check_question('2011年的是12年游客周转量的百分之几？'), ['indexes_2m_compare'])
-        self.assertEqual(self.check_question('2011年游客周转量占12年的百分之？'), ['indexes_2m_compare'])
+        self.assertEqual(self.check_question('2011年游客周转量占12的百分之？'), ['indexes_2m_compare'])
         self.assertEqual(self.check_question('2011年游客周转量是12年的几倍？'), ['indexes_2m_compare'])
         self.assertEqual(self.check_question('2011年游客周转量为12年的多少倍？'), ['indexes_2m_compare'])
 
@@ -122,6 +122,7 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2012年游客周转量比去年多了多少？'), ['indexes_2n_compare'])
         self.assertEqual(self.check_question('12年的货邮周转量比去年变化了多少？'), ['indexes_2n_compare'])
         self.assertEqual(self.check_question('12年的货邮周转量同去年相比变化了多少？'), ['indexes_2n_compare'])
+        self.assertEqual(self.check_question('13年的货邮周转量同2年前相比变化了多少？'), ['indexes_2n_compare'])
         self.assertEqual(self.check_question('12年同去年相比，货邮周转量变化了多少？'), ['indexes_2n_compare'])
 
     # 指标的组成
@@ -189,6 +190,7 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2011年港澳台与国内的游客周转量相比12降低多少？'), ['areas_2n_compare'])
         self.assertEqual(self.check_question('2011年港澳台的游客周转量同2012相比降低多少？'), ['areas_2n_compare'])
         self.assertEqual(self.check_question('2012年的港澳台与去年相比，游客周转量降低多少？'), ['areas_2n_compare'])
+        self.assertEqual(self.check_question('2013年的港澳台与两年前相比，游客周转量降低多少？'), ['areas_2n_compare'])
         # 反例
         self.assertEqual(self.check_question('2012年港澳台游客周转量比上一年的货邮周转量少多少？'), [])
 
@@ -206,6 +208,7 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2011-13年运输总周转量的变化趋势如何？'), ['indexes_trend'])
         self.assertEqual(self.check_question('2011-13年运输总周转量情况？'), ['indexes_trend'])
         self.assertEqual(self.check_question('2011-13年运输总周转量值分布状况？'), ['indexes_trend'])
+        self.assertEqual(self.check_question('2013年运输总周转量值与前两年相比变化状况如何？'), ['indexes_trend'])
         # 反例
         self.assertEqual(self.check_question('2011-12年运输总周转量的变化趋势如何？'), [])
 

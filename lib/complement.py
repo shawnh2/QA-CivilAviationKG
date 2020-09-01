@@ -2,7 +2,7 @@
 import re
 
 from lib.regexp import RangeYear, RefsYear
-from lib.mapping import Char2Digit, Ref2Digit
+from lib.mapping import map_digits, map_refs
 
 
 def year_complement(question: str) -> str:
@@ -10,48 +10,36 @@ def year_complement(question: str) -> str:
     例：11年 -> 2011年
        两千一十一年 -> 2011年
        11-15年 -> 2011年,2012年,2013年,2014年,2015年
-       13到15年 -> 2011年,2014年,2015年
+       13到15年 -> 2013年,2014年,2015年
 
        13年比前年 -> 2013年比2011年
        15年比大大前年 -> 2015年比2011年
+
+       16年比3年前 -> 2016年比2013年
+       16年与前三年相比 -> 2016年与2015年,2014年,2013年相比
     """
     complemented = question
 
     # 先填充范围
     range_years = re.compile(RangeYear).findall(question)
-
-    def fill_range(y: str) -> str:
-        # 替换
-        for k, v in Char2Digit.items():
-            y = y.replace(k, v)
-        # 填充
-        if len(y) == 2:
-            y = '20' + y
-        return y
-
     last_year = ''
     for (year, gap) in range_years:
         year = year.strip('年')
         if not gap:
-            new_year = fill_range(year)
+            new_year = map_digits(year)
         else:
             start, end = year.split(gap)
-            start_year, end_year = int(fill_range(start)), int(fill_range(end))
+            start_year, end_year = int(map_digits(start)), int(map_digits(end))
             new_year = ','.join([str(start_year + i) for i in range(end_year - start_year + 1)])
         last_year = new_year
         complemented = complemented.replace(year, new_year)
 
     # 后填充指代
-    for pattern in RefsYear:
+    for i, pattern in enumerate(RefsYear):
         ref_years = re.compile(pattern).findall(complemented)
         if ref_years:
             year = ref_years[0][-1]
-            n = 0
-            for ch in year:
-                d = Ref2Digit.get(ch)
-                if d:
-                    n += d
-            new_year = str(int(last_year) + n)
+            new_year = map_refs(year, i, int(last_year))
             complemented = complemented.replace(year, new_year)
             break
 
