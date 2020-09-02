@@ -1,0 +1,16 @@
+certifi==2020.6.20
+Click==7.0
+colorama==0.4.3
+neo4j-driver==4.0.0a4
+neobolt==1.7.17
+neotime==1.7.4
+prompt-toolkit==2.0.10
+py2neo==4.3.0
+pyahocorasick==1.4.0
+Pygments==2.3.1
+python-Levenshtein
+pytz==2020.1
+six==1.15.0
+urllib3==1.24.3
+wcwidth==0.2.5
+wincertstore==0.2

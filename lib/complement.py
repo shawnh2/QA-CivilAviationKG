@@ -1,6 +1,8 @@
 # 问题的填充
 import re
 
+import Levenshtein
+
 from lib.regexp import RangeYear, RefsYear
 from lib.mapping import map_digits, map_refs
 
@@ -46,32 +48,29 @@ def year_complement(question: str) -> str:
     return complemented
 
 
-def index_complement(question: str, words: list, threshold: int = 3) -> tuple:
+def index_complement(question: str, words: list,
+                     len_threshold: int = 4,
+                     ratio_threshold: float = 0.5) -> tuple:
     """对问题中的指标名词进行模糊查询并迭代返回最接近的项.
 
     :param question: 问题
     :param words: 查询范围(词集)
-    :param threshold: 最小的有效匹配长度
+    :param len_threshold: 最小的有效匹配长度
+    :param ratio_threshold: 最小匹配率
     :return: 首次匹配结果
     """
     charset = set("".join(words))
     pattern = re.compile(f'([{charset}]+)')
 
     for result in pattern.findall(question):
-        if len(result) < threshold:
+        if len(result) < len_threshold:
             continue
         scores = []
         for word in words:
-            score = 0
-            for c in result:
-                if c in word:
-                    score += 1
+            score = Levenshtein.ratio(word, result)
             scores.append(score)
         # 得分最高的最近似
         max_score = max(scores)
-        if max_score > 0:
-            indexes = [i for i, s in enumerate(scores) if s == max_score]
-            if len(indexes) >= threshold:
-                return [], result
-            return list(map(lambda i: words[i], indexes)), result
+        if max_score >= ratio_threshold:
+            return words[scores.index(max_score)], result
     return None, None

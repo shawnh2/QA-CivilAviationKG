@@ -68,17 +68,15 @@ class QuestionClassifier:
         filtered_question = year_complement(question)
         # 过滤特征词
         region_wds = []
-        region_dict = {}
         for w in self.region_tree.iter(filtered_question):
             region_wds.append(w[1][1])
-        if region_wds:
-            region_dict = {w: self.word_type_dict.get(w) for w in region_wds}
-        # 过滤指标(上述提取失败后)
-        else:
-            new_words, old_word = index_complement(filtered_question, self.index_wds)
-            if new_words:
-                filtered_question = filtered_question.replace(old_word, ','.join(new_words))
-                region_dict = {w: self.word_type_dict.get(w) for w in new_words}
+        region_dict = {w: self.word_type_dict.get(w) for w in region_wds}
+        # 过滤指标(在提取失败或问题中无指标值时)
+        if not region_dict or 'index' not in region_dict.values():
+            new_word, old_word = index_complement(filtered_question, self.index_wds)
+            if new_word:
+                filtered_question = filtered_question.replace(old_word, new_word)
+                region_dict[new_word] = self.word_type_dict.get(new_word)
 
         return Result(region_dict, question, filtered_question)
 
