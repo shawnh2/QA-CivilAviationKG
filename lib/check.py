@@ -16,11 +16,10 @@ def check_contain(words: list, question: str) -> bool:
 
 def check_all_contain(words: list, question: str) -> bool:
     """检查是否全部包含"""
-    count = 0
     for word in words:
-        if word in question:
-            count += 1
-    return count == len(words)
+        if word not in question:
+            return False
+    return True
 
 
 def check_list_contain(words: list, dst: list, *pos: int) -> bool:
