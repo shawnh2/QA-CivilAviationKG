@@ -19,7 +19,7 @@ class QuestionParser:
         self.sql_A_value = 'match (y:Year)-[r:`{i}`]->(n:Area) where y.name="{y}" and n.name="{a}" return r.value, r.unit,r.repr'
 
         self.sql_find_I_parent = 'match(n:Index)-[r:contain]->(m:Index) where m.name="{i}" return n.name'
-        self.sql_find_A_parent = 'match(n:Area)-[r:contain]->(n:Area) where m.name="{a}" return n.name'
+        self.sql_find_A_parent = 'match(n:Area)-[r:contain]->(m:Area) where m.name="{a}" return n.name'
         self.sql_find_I_child = 'match(n:Index)-[r:contain]->(m:Index) where n.name="{i}" return m.name'
         self.sql_find_A_I = 'match (i:Index)-[r:locate]->(a:Area) where i.name="{i}" return a.name'
         self.sql_find_Is = 'match (y:Year)-[r:value]->(i:Index) where y.name="{y}" return i.name'

@@ -38,8 +38,8 @@ class AnswerSearcher:
         results_1 = self._search_direct(chain)
         temp_res = self._search_direct(chain, 1)
         sqls = []
-        for pattern_sql in chain.iter(2):
-            for feed in temp_res:
+        for feed in temp_res:
+            for pattern_sql in chain.iter(2):
                 if feed is None:
                     sqls.append(None)
                     continue
@@ -56,9 +56,9 @@ class AnswerSearcher:
         # 年度目录状况
         elif qt == 'catalog_status':
             data = self._search_direct(chain)
-            answer = iter_one_name(data, result['catalog'],
-                                   ok_pattern=lambda x, n: f'{n}在{x[0]["r.info"]}',
-                                   none_pattern=lambda n: f'并没有关于{n}的描述')
+            answer = iter_with_name(data, result['catalog'],
+                                    ok_pattern=lambda x, n: f'{n}在{x[0]["r.info"]}',
+                                    none_pattern=lambda n: f'并没有关于{n}的描述')
         # 年度目录包含哪些
         elif qt == 'exist_catalog':
             data = self._search_direct(chain)
@@ -66,29 +66,48 @@ class AnswerSearcher:
         # 指标值
         elif qt == 'index_value':
             data = self._search_direct(chain)
-            answer = iter_one_name(data, result['index'],
-                                   ok_pattern=lambda x, n: f'{n}: {x[0]["r.value"]}{x[0]["r.unit"]}',
-                                   none_pattern=lambda n: f'{n}: 无数据记录')
+            answer = iter_with_name(data, result['index'],
+                                    ok_pattern=lambda x, n: f'{n}: {x[0]["r.value"]}{x[0]["r.unit"]}',
+                                    none_pattern=lambda n: f'{n}: 无数据记录')
         # 指标占总比
         elif qt == 'index_overall':
             data = self._search_double_direct_then_feed(chain, 'n.name')
-            answer = iter_bcmp_name(data, result['index'],
-                                    (None, lambda _, n, x, y, f: f'{n}: {x[0]["r.value"]}{x[0]["r.unit"]}'),
-                                    (lambda x, y: float(x[0]['r.value']) / float(y[0]['r.value']),
-                                     lambda r, n, x, y, f: f'其占总体（{f[0]["n.name"]}）的{r}'),
-                                    (lambda x, y: float(y[0]['r.value']) / float(x[0]['r.value']),
-                                     lambda r, n, x, y, f: f'总体（{f[0]["n.name"]}）是其的{r}倍'),
+            answer = iter_with_bcmp(data, result['index'],
+                                    binary_cmp_and_patterns=[
+                                        (None,
+                                         lambda _, n, x, y, f: f'{n}: {x[0]["r.value"]}{x[0]["r.unit"]}'),
+                                        (lambda x, y: float(x[0]['r.value']) / float(y[0]['r.value']),
+                                         lambda r, n, x, y, f: f'其占总体（{f[0]["n.name"]}）的{r}'),
+                                        (lambda x, y: float(y[0]['r.value']) / float(x[0]['r.value']),
+                                         lambda r, n, x, y, f: f'总体（{f[0]["n.name"]}）是其的{r}倍')
+                                    ],
                                     err_pattern=lambda n: f'无效的{n}值类型-无法比较',
-                                    none_pattern=lambda n: f'无{n}的父级数据记录-无法比较')
+                                    x_none_pattern=lambda n: f'无{n}的数据记录-无法比较',
+                                    y_none_pattern=lambda n: f'无{n}的父级数据记录-无法比较',
+                                    all_none_pattern=lambda _: '无数据记录-无法比较')
         # 地区指标值
         elif qt == 'area_value':
             data = self._search_direct(chain)
-            answer = iter_cross_name(data, result['area'], result['index'],
-                                     ok_pattern=lambda x, m, n: f'{m}{x[0]["r.repr"]}{n}: '
-                                                                f'{x[0]["r.value"]}{x[0]["r.unit"]}',
-                                     none_pattern=lambda m, n: f'{m}{n}: 无数据记录')
+            answer = iter_with_name(data, result['area'], result['index'],
+                                    ok_pattern=lambda x, m, n: f'{m}{x[0]["r.repr"]}{n}: '
+                                                               f'{x[0]["r.value"]}{x[0]["r.unit"]}',
+                                    none_pattern=lambda m, n: f'{m}{n}: 无数据记录')
         # 地区指标占总比
         elif qt == 'area_overall':
-            pass
+            data = self._search_double_direct_then_feed(chain, 'n.name')
+            answer = iter_with_bcmp(data, result['area'], result['index'],
+                                    binary_cmp_and_patterns=[
+                                        (None,
+                                         lambda _, n1, n2, x, y, f: f'{n1}{x[0]["r.repr"]}的{n2}：'
+                                                                    f'{x[0]["r.value"]}{x[0]["r.unit"]}'),
+                                        (lambda x, y: float(x[0]['r.value']) / float(y[0]['r.value']),
+                                         lambda r, n1, n2, x, y, f: f'占其总体（{f[0]["n.name"]}{n2}）的{r}'),
+                                        (lambda x, y: float(y[0]['r.value']) / float(x[0]['r.value']),
+                                         lambda r, n1, n2, x, y, f: f'总体（{f[0]["n.name"]}{n2}）是其的{r}倍')
+                                    ],
+                                    err_pattern=lambda n1, n2: f'{n1}中无效的{n2}值类型-无法比较',
+                                    x_none_pattern=lambda n1, n2: f'{n1}无{n2}的数据记录-无法比较',
+                                    y_none_pattern=lambda n1, n2: f'{n1}无{n2}的父级数据记录-无法比较',
+                                    all_none_pattern=lambda _: '无数据记录-无法比较')
 
         return answer

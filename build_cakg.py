@@ -35,7 +35,7 @@ class CivilAviationKnowledgeGraph:
             prefix, name = fields.split('-')
             if first_time:
                 self.cur_value_rel_src = (prefix, name)
-            if prefix == 'I':
+            if prefix == 'I' and entities.get("next"):
                 self.cur_index_name = name
             # 获取实体属性
             attrs = entities.get("attrs")
