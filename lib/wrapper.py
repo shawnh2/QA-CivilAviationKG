@@ -2,7 +2,7 @@
 from types import FunctionType
 from itertools import product
 
-__all__ = ['iter_with_name', 'iter_with_bcmp']
+__all__ = ['iter_with_name', 'iter_with_binary', 'iter_with_feed']
 
 
 def product_name(*name: list):
@@ -44,13 +44,49 @@ def iter_with_name(data: list, *names: list,
     return '；'.join(answers)
 
 
-def iter_with_bcmp(data: tuple, *names: list,
+def iter_with_binary(data: list, names: list,
+                     *func_and_pattern: tuple) -> str:
+    """ 制造只涉及二元运算的回答，包括单位检查，内置错误语句模板。
+
+    :param data: 查询结果
+    :param names: 查询名称
+    :param func_and_pattern: 元组列表，包括一个二元计算函数和一个句子模板，后者提供五个参数：res（二元计算结果），x，y（值），n1，n2（名称）
+    :return: 回答
+    """
+    x, y = data
+    n1, n2 = names
+    answer = ''
+    if x and y:
+        # 单位检查
+        ux, uy = x[0]['r.unit'], y[0]['r.unit']
+        if ux != uy:
+            return f'{n1}的单位（{ux}）与{n2}的单位（{uy}）不同-无法比较'
+        answers = []
+        for func, ok_pattern in func_and_pattern:
+            try:
+                res = round(func(x, y), 3) if func else None
+                answer = ok_pattern(res, x, y, n1, n2)
+            except ValueError:
+                answer = f'无效的{n1}或{n2}值类型-无法比较'
+            finally:
+                answers.append(answer)
+        return '，'.join(answers)
+    elif not x:
+        answer = f'{n1}无数据记录-无法比较'
+    elif not y:
+        answer = f'{n2}无数据记录-无法比较'
+    else:
+        answer = f'{n1}与{n2}无数据记录-无法比较'
+    return answer
+
+
+def iter_with_feed(data: tuple, *names: list,
                    binary_cmp_and_patterns: list,
                    err_pattern: FunctionType,
                    x_none_pattern: FunctionType,
                    y_none_pattern: FunctionType,
                    all_none_pattern: FunctionType) -> str:
-    """ 制造涉及二元运算的回答。
+    """ 制造涉值的投递及二元运算的回答。
 
     :param data: 查询结果
     :param names: 查询名称
@@ -69,10 +105,7 @@ def iter_with_bcmp(data: tuple, *names: list,
             for cmp_func, ok_pattern in binary_cmp_and_patterns:
                 sent = ''
                 try:
-                    if cmp_func:
-                        result = round(cmp_func(x, y), 3)
-                    else:
-                        result = None
+                    result = round(cmp_func(x, y), 3) if cmp_func else None
                     sent = ok_pattern(result, *n, x, y, f)
                 except ValueError:
                     sent = err_pattern(*n)

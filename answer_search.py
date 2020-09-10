@@ -2,6 +2,7 @@
 from py2neo import Graph
 
 from lib.wrapper import *
+from lib.utils import sign
 from lib.result import Result
 from lib.chain import TranslationChain
 
@@ -72,7 +73,7 @@ class AnswerSearcher:
         # 指标占总比
         elif qt == 'index_overall':
             data = self._search_double_direct_then_feed(chain, 'n.name')
-            answer = iter_with_bcmp(data, result['index'],
+            answer = iter_with_feed(data, result['index'],
                                     binary_cmp_and_patterns=[
                                         (None,
                                          lambda _, n, x, y, f: f'{n}: {x[0]["r.value"]}{x[0]["r.unit"]}'),
@@ -84,30 +85,46 @@ class AnswerSearcher:
                                     err_pattern=lambda n: f'无效的{n}值类型-无法比较',
                                     x_none_pattern=lambda n: f'无{n}的数据记录-无法比较',
                                     y_none_pattern=lambda n: f'无{n}的父级数据记录-无法比较',
-                                    all_none_pattern=lambda _: '无数据记录-无法比较')
+                                    all_none_pattern=lambda _: '无任何数据记录-无法比较')
+        # 指标倍数比较（只有两个指标）
+        elif qt == 'indexes_m_compare':
+            data = self._search_direct(chain)
+            answer = iter_with_binary(data, result['index'],
+                                      (None,
+                                       lambda _, x, y, n1, n2: f'{n1}为{x[0]["r.value"]}{x[0]["r.unit"]}，{n2}为{y[0]["r.value"]}{y[0]["r.unit"]}'),
+                                      (lambda x, y: float(x[0]['r.value']) / float(y[0]['r.value']),
+                                       lambda r, x, y, n1, n2: f'前者是后者的{r}倍'),
+                                      (lambda x, y: float(y[0]['r.value']) / float(x[0]['r.value']),
+                                       lambda r, x, y, n1, n2: f'后者占前者的{r}'))
+        # 指标数量比较（只有两个指标）
+        elif qt == 'indexes_n_compare':
+            data = self._search_direct(chain)
+            answer = iter_with_binary(data, result['index'],
+                                      (None,
+                                       lambda _, x, y, n1, n2: f'{n1}为{x[0]["r.value"]}{x[0]["r.unit"]}，{n2}为{y[0]["r.value"]}{y[0]["r.unit"]}'),
+                                      (lambda x, y: float(x[0]['r.value']) - float(y[0]['r.value']),
+                                       lambda r, x, y, n1, n2: f'前者比后者{sign(r)}{abs(r)}{x[0]["r.unit"]}'))
         # 地区指标值
         elif qt == 'area_value':
             data = self._search_direct(chain)
             answer = iter_with_name(data, result['area'], result['index'],
-                                    ok_pattern=lambda x, m, n: f'{m}{x[0]["r.repr"]}{n}: '
-                                                               f'{x[0]["r.value"]}{x[0]["r.unit"]}',
+                                    ok_pattern=lambda x, m, n: f'{m}{x[0]["r.repr"]}{n}: {x[0]["r.value"]}{x[0]["r.unit"]}',
                                     none_pattern=lambda m, n: f'{m}{n}: 无数据记录')
         # 地区指标占总比
         elif qt == 'area_overall':
             data = self._search_double_direct_then_feed(chain, 'n.name')
-            answer = iter_with_bcmp(data, result['area'], result['index'],
+            answer = iter_with_feed(data, result['area'], result['index'],
                                     binary_cmp_and_patterns=[
                                         (None,
-                                         lambda _, n1, n2, x, y, f: f'{n1}{x[0]["r.repr"]}的{n2}：'
-                                                                    f'{x[0]["r.value"]}{x[0]["r.unit"]}'),
+                                         lambda _, n1, n2, x, y, f: f'{n1}{x[0]["r.repr"]}的{n2}：{x[0]["r.value"]}{x[0]["r.unit"]}'),
                                         (lambda x, y: float(x[0]['r.value']) / float(y[0]['r.value']),
-                                         lambda r, n1, n2, x, y, f: f'占其总体（{f[0]["n.name"]}{n2}）的{r}'),
+                                         lambda r, n1, n2, x, y, f: f'其占总体（{f[0]["n.name"]}{n2}）的{r}'),
                                         (lambda x, y: float(y[0]['r.value']) / float(x[0]['r.value']),
                                          lambda r, n1, n2, x, y, f: f'总体（{f[0]["n.name"]}{n2}）是其的{r}倍')
                                     ],
                                     err_pattern=lambda n1, n2: f'{n1}中无效的{n2}值类型-无法比较',
                                     x_none_pattern=lambda n1, n2: f'{n1}无{n2}的数据记录-无法比较',
                                     y_none_pattern=lambda n1, n2: f'{n1}无{n2}的父级数据记录-无法比较',
-                                    all_none_pattern=lambda _: '无数据记录-无法比较')
+                                    all_none_pattern=lambda _: '无任何数据记录-无法比较')
 
         return answer
