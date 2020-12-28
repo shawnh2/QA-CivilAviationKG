@@ -34,6 +34,9 @@ class Result(object):
         """返回某个特征词类型的个数"""
         return self.region_wds_types.count(type_name)
 
+    def add_word(self, word: str, type_: str):
+        self.region_wds[word] = type_
+
     def add_qtype(self, question_type):
         self.question_types.append(question_type)
 

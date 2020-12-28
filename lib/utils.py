@@ -1,4 +1,5 @@
 from lib.errors import QuestionError
+from const import DEBUG
 
 
 def read_words(path: str) -> list:
@@ -19,6 +20,11 @@ class InterruptAnswer(QuestionError):
     pass
 
 
-def sign(n: float):
+def sign(n: float, repr_: tuple = ('少', '多')):
     """ 以字符串的形式返回浮点数的正负号 """
-    return '少' if n < 0 else '多'
+    return repr_[0] if n < 0 else repr_[1]
+
+
+def debug(*args):
+    if DEBUG:
+        print('DEBUG:', *args)

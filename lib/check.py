@@ -22,11 +22,13 @@ def check_all_contain(words: list, question: str) -> bool:
     return True
 
 
-def check_list_contain(words: list, dst: list, *pos: int) -> bool:
-    """检查列表中指定位置的包含关系, 有一个不存在即为假"""
+def check_list_contain(words: list, dst: list, *pos: int, not_: int = None) -> bool:
+    """检查列表中指定位置的包含关系, 有一个不存在即为假, not_即不能存在的位置"""
     for i in pos:
         if not check_contain(words, dst[i]):
             return False
+    if not_ and check_contain(words, dst[not_]):
+        return False
     return True
 
 
