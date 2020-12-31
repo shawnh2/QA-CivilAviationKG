@@ -95,9 +95,8 @@ class Answer:
                                if_y_is_none: FunctionType,
                                if_x_and_y_is_none: FunctionType):
         data1, data2, feed = self._data
-        for item1, item2, feed, name in zip(data1, data2,
-                                            self.product_repeat(feed, len(data2)//len(feed)),
-                                            self.product_name(*names)):
+        n = len(data2) // len(feed)
+        for item1, item2, feed, name in zip(data1, data2, self.product_repeat(feed, n), self.product_name(*names)):
             if self.binary_decision(item1, item2,
                                     not_x=if_x_is_none(item1, item2, feed, name),
                                     not_y=if_y_is_none(item1, item2, feed, name),
@@ -120,6 +119,10 @@ class Answer:
     # 常用逻辑模板
 
     def binary_decision(self, x, y, not_x: str, not_y: str, not_x_and_y: str) -> bool:
+        if isinstance(x, list):
+            x = any(x)
+        if isinstance(y, list):
+            y = any(y)
         dec = False
         if x and y:
             dec = True
@@ -134,6 +137,16 @@ class Answer:
     def add_if_is_equal(self, x, y, no: str, to_sub: bool = False) -> bool:
         # 返回两值是否相同，若不同则把no加入answer
         if x != y:
+            if to_sub:
+                self.add_sub_answers(no)
+            else:
+                self.add_answer(no)
+            return False
+        return True
+
+    def add_if_is_not_equal(self, x, y, no: str, to_sub: bool = False) -> bool:
+        # 返回两值是否不同，若相同则把no加入answer
+        if x == y:
             if to_sub:
                 self.add_sub_answers(no)
             else:

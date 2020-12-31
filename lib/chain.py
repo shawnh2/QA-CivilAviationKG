@@ -21,8 +21,9 @@ class TranslationChain:
         self._chain.clear()
         self._offset = 0
 
-    def iter(self, offset: int = 0):
-        for sql in self._chain[offset]:
+    def iter(self, offset: int = 0, unpack: bool = False):
+        gen = self._chain[offset][0] if unpack else self._chain[offset]
+        for sql in gen:
             yield sql
 
     def __repr__(self):
