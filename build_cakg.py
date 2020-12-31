@@ -5,6 +5,7 @@ from py2neo import Graph, Node
 
 from lib.utils import write_to_file
 from lib.mapping import PREFIX_LABEL_MAP, PREFIX_S_REL_MAP, PREFIX_V_REL_MAP
+from const import URI, USERNAME, PASSWORD
 
 
 class CivilAviationKnowledgeGraph:
@@ -13,7 +14,7 @@ class CivilAviationKnowledgeGraph:
         self.data_path = "./data/data.json"
         self.export_dir = "./data/dicts/"
 
-        self.graph = Graph("http://localhost:7474", auth=("neo4j", "shawn"))
+        self.graph = Graph(URI, auth=(USERNAME, PASSWORD))
         self.entities = {}  # 收集实体
         self.attrs = {}  # 实体属性
         self.rels_structures = set()  # 实体结构关系

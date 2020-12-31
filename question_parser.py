@@ -42,7 +42,7 @@ class QuestionParser:
             elif qt in ('index_2_overall', 'indexes_overall_trend'):
                 self.trans_indexes_overall(result['year'], result['index'])
             elif qt == 'index_compose':
-                self.trans_index_compose(result['year'], result['index'])
+                self.trans_index_compose(result['index'])
             elif qt in ('indexes_2m_compare', 'indexes_2n_compare'):
                 self.trans_indexes_mn_compare(result['year'], result['index'])
             elif qt == 'indexes_g_compare':
@@ -126,9 +126,8 @@ class QuestionParser:
                   .then([self.sql_I_value.format(y=y, i='{}') for y in years])
 
     # 指标组成
-    def trans_index_compose(self, years, indexes):
-        self.chain.make([self.sql_find_I_child.format(i=i) for i in indexes])\
-                  .then([self.sql_I_value.format(y=years[0], i='{}')])
+    def trans_index_compose(self, indexes):
+        self.chain.make([self.sql_find_I_child.format(i=i) for i in indexes])
 
     # 地区指标值
     def trans_area_value(self, years, areas, indexes):
