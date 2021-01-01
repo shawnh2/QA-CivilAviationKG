@@ -137,9 +137,19 @@ class CivilAviationKnowledgeGraph:
             write_to_file(f"./data/dicts/{PREFIX_LABEL_MAP[key]}.txt", values)
         print("导出实体数据完毕.")
 
+    def export_fast_index_table(self):
+        """ 导出指标快表 """
+        striped = ['的', '比', '一', '三', '0', '1', '与', '年', '占', '有', '增', '长',
+                   '减', '大', '小', '上', '直', '和']
+        fast_table = set(''.join(self.entities['I']))
+        for char in striped:
+            fast_table.remove(char)
+        write_to_file("./data/dicts/fast_index_table.txt", [''.join(fast_table)])
+
 
 if __name__ == '__main__':
     cakg = CivilAviationKnowledgeGraph()
     cakg.collect()
     cakg.build()
     cakg.export_collections()
+    cakg.export_fast_index_table()

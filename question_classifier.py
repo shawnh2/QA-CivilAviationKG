@@ -4,7 +4,7 @@ import ahocorasick
 from lib.check import *
 from lib.regexp import *
 from lib.result import Result
-from lib.utils import read_words
+from lib.utils import read_words, debug
 from lib.complement import year_complement, index_complement
 from lib.errors import QuestionOrderError
 
@@ -71,20 +71,27 @@ class QuestionClassifier:
         for w in self.region_tree.iter(filtered_question):
             region_wds.append(w[1][1])
         region_dict = {w: self.word_type_dict.get(w) for w in region_wds}
-        # 过滤指标(在提取失败或问题中无指标值时)
-        if not region_dict or 'index' not in region_dict.values():
-            new_word, old_word = index_complement(filtered_question, self.index_wds)
-            if new_word:
-                filtered_question = filtered_question.replace(old_word, new_word)
-                region_dict[new_word] = self.word_type_dict.get(new_word)
 
         return Result(region_dict, question, filtered_question)
 
+    def extract_index(self, result: Result, len_threshold: int = 4, ratio_threshold: float = 0.5):
+        """ 提取因错别字或说法而未识别到的指标 """
+        new_word, old_word = index_complement(result.filtered_question, self.index_wds, len_threshold, ratio_threshold)
+        if new_word:
+            debug('||REPLACE FOUND||', new_word, '<=', old_word)
+            result.add_word(new_word, self.word_type_dict.get(new_word))
+            result.replace_words(old_word, new_word)
+
     def classify(self, question: str):
         result = self.question_filter(question)
+        if result.count('index') == 0 and 'catalog' not in result:
+            self.extract_index(result)
+        # 没有任何提取结果
         if result.is_wds_null():
             return None
         self._classify_tree(result)
+        debug('||QUESTION WORDS||', result.region_wds)
+        debug('||QUESTION TYPES||', result.question_types)
         return result
 
     def _classify_tree(self, result: Result):
@@ -128,6 +135,9 @@ class QuestionClassifier:
                     else:
                         result.add_qtype('index_overall')
                 # 值比较(同类同单位)
+                if result.count('index') < 2:
+                    self.extract_index(result)
+                    question = result.filtered_question  # 重新查询后更新
                 if result.count('index') == 2 and 'area' not in result:
                     if check_regexp(question, MultipleCmp1, functions=[
                         lambda x: check_list_contain(result['index'], x[0], 0, -1)
@@ -139,10 +149,10 @@ class QuestionClassifier:
                     ]):
                         result.add_qtype('indexes_n_compare')  # 比较数量关系
                 # 地区值比较(相同指标不同地区)
-                if result.count('index') == 1 and result.count('area') == 2:
+                if result.count('area') == 2:
                     if check_regexp(question, MultipleCmp1, functions=[
                         lambda x: (check_list_contain(result['area'], x[0], 0, -1) and
-                                   check_list_contain(result['index'], x[0], 0))
+                                   check_list_contain(result['index'], x[0], 0, not_=-1))
                     ]):
                         result.add_qtype('areas_m_compare')  # 比较倍数关系
                     if check_regexp(question, NumberCmp1, functions=[

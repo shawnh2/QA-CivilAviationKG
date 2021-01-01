@@ -116,8 +116,7 @@ class AnswerSearcher:
             for x, y, f, n in answer.product_data_with_feed(
                     result['index'],
                     if_x_is_none=lambda _1, _2, _3, na: f'无{na[0]}的数据记录-无法比较',
-                    if_y_is_none=lambda _1, _2, _3, na: f'无{na[0]}的父级数据记录-无法比较',
-                    if_x_and_y_is_none=lambda _1, _2, _3, na: f'无{na[0]}任何数据记录-无法比较'):
+                    if_y_is_none=lambda _1, _2, _3, na: f'无{na[0]}的父级数据记录-无法比较'):
                 answer.begin_sub_answers()
                 answer.add_sub_answers(f'{n[0]}为{x[0]["r.value"]}{x[0]["r.unit"]}')
                 res1 = answer.binary_calculation(x[0]['r.value'], y[0]['r.value'], truediv, percentage=True)
@@ -135,8 +134,7 @@ class AnswerSearcher:
             for x, y, f, n in answer.product_data_with_feed(
                     result["index"],
                     if_x_is_none=lambda _1, _2, _3, na: f'无近两年{na[0]}的数据记录-无法比较',
-                    if_y_is_none=lambda _1, _2, _3, na: f'无近两年{na[0]}的父级数据记录-无法比较',
-                    if_x_and_y_is_none=lambda _1, _2, _3, na: f'无近两年任何关于{na[0]}的数据记录-无法比较'):
+                    if_y_is_none=lambda _1, _2, _3, na: f'无近两年{na[0]}的父级数据记录-无法比较'):
                 temp = []  # 记录两次计算的结果值
                 for i, year in enumerate(result["year"]):
                     answer.begin_sub_answers()
@@ -165,11 +163,10 @@ class AnswerSearcher:
             for (x, y), (n1, n2) in answer.product_data_with_binary(
                     result['index'],
                     if_x_is_none=lambda _1, _2, na: f'无{na[0][0]}数据记录-无法比较',
-                    if_y_is_none=lambda _1, _2, na: f'无{na[1][0]}数据记录-无法比较',
-                    if_x_and_y_is_none=lambda _1, _2, na: f'无{na[0][0]}与{na[1][0]}数据记录-无法比较'):
+                    if_y_is_none=lambda _1, _2, na: f'无{na[1][0]}数据记录-无法比较'):
                 # 单位检查
                 ux, uy = x[0]['r.unit'], y[0]['r.unit']
-                if answer.add_if_is_equal(ux, uy, no=f'{n1[0]}的单位（{ux}）与{n2[0]}的单位（{uy}）不同-无法比较'):
+                if answer.add_if_is_equal_or_not(ux, uy, no=f'{n1[0]}的单位（{ux}）与{n2[0]}的单位（{uy}）不同-无法比较'):
                     answer.begin_sub_answers()
                     answer.add_sub_answers(f'{n1[0]}为{x[0]["r.value"]}{x[0]["r.unit"]}，'
                                            f'{n2[0]}为{y[0]["r.value"]}{y[0]["r.unit"]}')
@@ -184,13 +181,32 @@ class AnswerSearcher:
                         if answer.add_if_is_not_none(res2, no=f'{n1[0]}或{n2[0]}非数值类型-无法比较'):
                             answer.add_sub_answers(f'后者是前者的{res2}倍')
                     answer.end_sub_answers()
+        elif qt in ('indexes_2m_compare', 'indexes_2n_compare'):
+            data = self._search_direct(chain)
+            answer.feed_data(data)
+            operator = truediv if qt == 'indexes_2m_compare' else sub
+            for item, name in answer.product_data_with_name(result["index"]):
+                x, y = item
+                if answer.binary_decision(x, y,
+                                          not_x=f'无关于{result["year"][0]}年{name[0]}的记录',
+                                          not_y=f'无关于{result["year"][1]}年{name[0]}的记录'):
+                    res = answer.binary_calculation(x[0]["r.value"], y[0]["r.value"], operator)
+                    if answer.add_if_is_not_none(res, no=f'{name[0]}的记录为无效的值类型-无法比较', to_sub=False):
+                        if qt == 'indexes_2m_compare':
+                            line = f'{result["year"][0]}年的{name[0]}（{x[0]["r.value"]}{x[0]["r.unit"]}）' \
+                                   f'是{result["year"][1]}年的（{y[0]["r.value"]}{y[0]["r.unit"]}）{res}倍'
+                        else:
+                            line = f'{result["year"][0]}年的{name[0]}（{x[0]["r.value"]}{x[0]["r.unit"]}）' \
+                                   f'比{result["year"][1]}年的（{y[0]["r.value"]}{y[0]["r.unit"]}）' \
+                                   f'{sign(res, ("减少", "增加"))}{abs(res)}{x[0]["r.unit"]}'
+                        answer.add_answer(line)
         # 指标值同比比较
         elif qt == 'indexes_g_compare':
             data = self._search_direct(chain)
             answer.feed_data(data)
             for item, name in answer.product_data_with_name(result['index']):
                 x, y = item
-                if answer.binary_decision(x, y, not_x_and_y=f'无关于{name[0]}的数据',
+                if answer.binary_decision(x, y,
                                           not_x=f'无{result["year"][0]}年关于{name[0]}的数据',
                                           not_y=f'无{result["year"][0]}前一年关于{name[0]}的数据'):
                     res = answer.growth_calculation(y[0]["r.value"], x[0]["r.value"])
@@ -213,8 +229,7 @@ class AnswerSearcher:
             for x, y, f, n in answer.product_data_with_feed(
                     result['area'], result['index'],
                     if_x_is_none=lambda _1, _2, _3, na: f'{na[0]}无{na[1]}的数据记录-无法比较',
-                    if_y_is_none=lambda _1, _2, _3, na: f'{na[0]}无{na[1]}父级地区的数据记录-无法比较',
-                    if_x_and_y_is_none=lambda _1, _2, _3, na: f'{na[0]}无任何关于{na[1]}的数据记录-无法比较'):
+                    if_y_is_none=lambda _1, _2, _3, na: f'{na[0]}无{na[1]}父级地区的数据记录-无法比较'):
                 answer.begin_sub_answers()
                 answer.add_sub_answers(f'{n[0]}{x[0]["r.repr"]}的{n[1]}为{x[0]["r.value"]}{x[0]["r.unit"]}')
                 res1 = answer.binary_calculation(x[0]['r.value'], y[0]['r.value'], truediv, percentage=True)
@@ -232,8 +247,7 @@ class AnswerSearcher:
             for x, y, f, n in answer.product_data_with_feed(
                 result["area"], result["index"],
                     if_x_is_none=lambda _1, _2, _3, na: f'无近两年{na[0]}{na[1]}的数据记录-无法比较',
-                    if_y_is_none=lambda _1, _2, _3, na: f'无近两年{na[0]}{na[1]}的父级数据记录-无法比较',
-                    if_x_and_y_is_none=lambda _1, _2, _3, na: f'无近两年任何关于{na[0]}{na[1]}的数据记录-无法比较'):
+                    if_y_is_none=lambda _1, _2, _3, na: f'无近两年{na[0]}{na[1]}的父级数据记录-无法比较'):
                 temp = []  # 记录两次计算的结果值
                 for i, year in enumerate(result["year"]):
                     answer.begin_sub_answers()
@@ -262,11 +276,10 @@ class AnswerSearcher:
             for (x, y), (n1, n2) in answer.product_data_with_binary(
                     result['area'], result['index'],
                     if_x_is_none=lambda _1, _2, na: f'无{na[0][0]}{na[0][1]}数据记录-无法比较',
-                    if_y_is_none=lambda _1, _2, na: f'无{na[1][0]}{na[1][1]}数据记录-无法比较',
-                    if_x_and_y_is_none=lambda _1, _2, na: f'无{na[0][0]}{na[0][1]}与{na[1][0]}{na[1][1]}数据记录-无法比较'):
+                    if_y_is_none=lambda _1, _2, na: f'无{na[1][0]}{na[1][1]}数据记录-无法比较'):
                 # 单位检查
                 ux, uy = x[0]['r.unit'], y[0]['r.unit']
-                if answer.add_if_is_equal(ux, uy, no=f'{n1[0]}的单位（{ux}）与{n2[0]}的单位（{uy}）不同-无法比较'):
+                if answer.add_if_is_equal_or_not(ux, uy, no=f'{n1[0]}的单位（{ux}）与{n2[0]}的单位（{uy}）不同-无法比较'):
                     answer.begin_sub_answers()
                     answer.add_sub_answers(f'{n1[0]}{x[0]["r.repr"]}的{n1[1]}为{x[0]["r.value"]}{x[0]["r.unit"]}，'
                                            f'{n2[0]}{x[0]["r.repr"]}的{n2[1]}为{y[0]["r.value"]}{y[0]["r.unit"]}')
@@ -281,13 +294,32 @@ class AnswerSearcher:
                         if answer.add_if_is_not_none(res2, no=f'{n1[0][0]}{n1[0][1]}或{n2[1][0]}{n2[1][1]}非数值类型-无法比较'):
                             answer.add_sub_answers(f'后者是前者的{res2}倍')
                     answer.end_sub_answers()
+        elif qt in ('areas_2m_compare', 'areas_2n_compare'):
+            data = self._search_direct(chain, unpack=True)
+            answer.feed_data(data)
+            operator = truediv if qt == 'areas_2m_compare' else sub
+            for item, name in answer.product_data_with_name(result["area"], result["index"]):
+                x, y = item
+                if answer.binary_decision(x, y,
+                                          not_x=f'无关于{result["year"][0]}年{name[0]}的{name[1]}的记录',
+                                          not_y=f'无关于{result["year"][0]}年{name[0]}的{name[1]}的记录'):
+                    res = answer.binary_calculation(x[0]["r.value"], y[0]["r.value"], operator)
+                    if answer.add_if_is_not_none(res, no=f'{name[0]}的{name[1]}的记录为无效的值类型-无法比较', to_sub=False):
+                        if qt == 'areas_2m_compare':
+                            line = f'{result["year"][0]}年{name[0]}的{name[1]}（{x[0]["r.value"]}{x[0]["r.unit"]}）' \
+                                   f'是{result["year"][1]}年的（{y[0]["r.value"]}{y[0]["r.unit"]}）{res}倍'
+                        else:
+                            line = f'{result["year"][0]}年{name[0]}的{name[1]}（{x[0]["r.value"]}{x[0]["r.unit"]}）' \
+                                   f'比{result["year"][1]}年的（{y[0]["r.value"]}{y[0]["r.unit"]}）' \
+                                   f'{sign(res, ("减少", "增加"))}{abs(res)}{x[0]["r.unit"]}'
+                        answer.add_answer(line)
         # 地区指标值同比比较
         elif qt == 'areas_g_compare':
             data = self._search_direct(chain)
             answer.feed_data(data)
             for item, name in answer.product_data_with_name(result['area'], result['index']):
                 x, y = item
-                if answer.binary_decision(x, y, not_x_and_y=f'无关于{name[0]}的数据',
+                if answer.binary_decision(x, y,
                                           not_x=f'无{result["year"][0]}年关于{name[0]}{name[1]}的数据',
                                           not_y=f'无{result["year"][0]}前一年关于{name[0]}{name[1]}的数据'):
                     res = answer.growth_calculation(y[0]["r.value"], x[0]["r.value"])
@@ -304,9 +336,11 @@ class AnswerSearcher:
             set1, set2 = set([n[unpack_key_name] for n in data[0]]), set([n[unpack_key_name] for n in data[1]])
             diff1, diff2 = set1.difference(set2), set2.difference(set1)
             n1, n2 = len(diff1), len(diff2)
-            if answer.add_if_is_not_equal(n1, 0, no=f'{result["year"][1]}年与{result["year"][0]}年的{tag_name}相同'):
+            if answer.add_if_is_equal_or_not(n1, 0, equal=False,
+                                             no=f'{result["year"][1]}年与{result["year"][0]}年的{tag_name}相同'):
                 answer.add_answer(f'{result["year"][1]}年与{result["year"][0]}年相比，未统计{n1}个{tag_name}：' + '、'.join(diff1))
-            if answer.add_if_is_not_equal(n2, 0, no=f'{result["year"][0]}年与{result["year"][1]}年的{tag_name}相同'):
+            if answer.add_if_is_equal_or_not(n2, 0, equal=False,
+                                             no=f'{result["year"][0]}年与{result["year"][1]}年的{tag_name}相同'):
                 answer.add_answer(f'{result["year"][0]}年与{result["year"][1]}年相比，未统计{n2}个{tag_name}：' + '、'.join(diff2))
 
         return answer.to_string()

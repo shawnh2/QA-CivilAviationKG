@@ -92,33 +92,29 @@ class Answer:
 
     def product_data_with_feed(self, *names,
                                if_x_is_none: FunctionType,
-                               if_y_is_none: FunctionType,
-                               if_x_and_y_is_none: FunctionType):
+                               if_y_is_none: FunctionType):
         data1, data2, feed = self._data
         n = len(data2) // len(feed)
         for item1, item2, feed, name in zip(data1, data2, self.product_repeat(feed, n), self.product_name(*names)):
             if self.binary_decision(item1, item2,
                                     not_x=if_x_is_none(item1, item2, feed, name),
-                                    not_y=if_y_is_none(item1, item2, feed, name),
-                                    not_x_and_y=if_x_and_y_is_none(item1, item2, feed, name)):
+                                    not_y=if_y_is_none(item1, item2, feed, name)):
                 yield item1, item2, feed, name
 
     def product_data_with_binary(self, *names,
                                  if_x_is_none: FunctionType,
-                                 if_y_is_none: FunctionType,
-                                 if_x_and_y_is_none: FunctionType):
+                                 if_y_is_none: FunctionType):
         for item, name in zip(self.product_binary(self._data),
                               self.product_binary([n for n in self.product_name(*names)])):
             x, y = item
             if self.binary_decision(x, y,
                                     not_x=if_x_is_none(x, y, name),
-                                    not_y=if_y_is_none(x, y, name),
-                                    not_x_and_y=if_x_and_y_is_none(x, y, name)):
+                                    not_y=if_y_is_none(x, y, name)):
                 yield item, name
 
     # 常用逻辑模板
 
-    def binary_decision(self, x, y, not_x: str, not_y: str, not_x_and_y: str) -> bool:
+    def binary_decision(self, x, y, not_x: str, not_y: str) -> bool:
         if isinstance(x, list):
             x = any(x)
         if isinstance(y, list):
@@ -128,25 +124,16 @@ class Answer:
             dec = True
         elif not x:
             self.add_answer(not_x)
-        elif not y:
-            self.add_answer(not_y)
         else:
-            self.add_answer(not_x_and_y)
+            self.add_answer(not_y)
         return dec
 
-    def add_if_is_equal(self, x, y, no: str, to_sub: bool = False) -> bool:
-        # 返回两值是否相同，若不同则把no加入answer
-        if x != y:
-            if to_sub:
-                self.add_sub_answers(no)
-            else:
-                self.add_answer(no)
-            return False
-        return True
-
-    def add_if_is_not_equal(self, x, y, no: str, to_sub: bool = False) -> bool:
-        # 返回两值是否不同，若相同则把no加入answer
-        if x == y:
+    def add_if_is_equal_or_not(self, x, y, no: str,
+                               equal: bool = True, to_sub: bool = False) -> bool:
+        """ equal=True时，两值相同则返回，若不同则把no加入answer；
+            equal=False时，两值不同则返回，若相同则把no加入answer """
+        add_no = (x != y) if equal else (x == y)
+        if add_no:
             if to_sub:
                 self.add_sub_answers(no)
             else:
@@ -155,7 +142,7 @@ class Answer:
         return True
 
     def add_if_is_not_none(self, x, no: str, to_sub: bool = True) -> bool:
-        # 如果x为None，就把no加入sub_answers中
+        """ 如果x为None，就把no加入answers中 """
         if x is None:
             if to_sub:
                 self.add_sub_answers(no)

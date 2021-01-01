@@ -3,6 +3,7 @@ import re
 
 import Levenshtein
 
+from lib.utils import read_words
 from lib.regexp import RangeYear, RefsYear
 from lib.mapping import map_digits, map_refs
 
@@ -59,11 +60,11 @@ def index_complement(question: str, words: list,
     :param ratio_threshold: 最小匹配率
     :return: 首次匹配结果
     """
-    charset = set("".join(words))
+    charset = read_words('./data/dicts/fast_index_table.txt')[0]
     pattern = re.compile(f'([{charset}]+)')
 
     for result in pattern.findall(question):
-        if len(result) < len_threshold:
+        if len(result) < len_threshold or result in words:
             continue
         scores = []
         for word in words:

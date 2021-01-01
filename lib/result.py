@@ -51,3 +51,7 @@ class Result(object):
         for k, v in self.region_wds.items():
             new_dict.setdefault(v, []).append(k)
         return new_dict
+
+    def replace_words(self, old_word: str, new_word: str):
+        """ 更改句子中的词语 """
+        self.filtered_question = self.filtered_question.replace(old_word, new_word)
