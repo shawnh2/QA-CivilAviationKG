@@ -89,26 +89,26 @@ class QCTest(unittest.TestCase):
         self.assertEqual(self.check_question('2011年货邮周转量是货邮周转量的几倍？'), [])
 
         # 数量比较
-        self.assertEqual(self.check_question('11年游客周转量比货邮周转量多多少？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量比货邮周转量大？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量比货邮周转量少多少？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量比货邮周转量增加了多少？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量比货邮周转量降低了？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量比货邮周转量降低了？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量比货邮周转量变化了多少？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量比货邮周转量变了？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量与货邮周转量相比降低了多少？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量与货邮周转量比，降低了多少？'), ['indexes_n_compare'])
-        self.assertEqual(self.check_question('11年游客周转量与货邮周转量比较 降低了多少？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量比货邮周转量多多少？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量比货邮周转量大？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量比货邮周转量少多少？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量比货邮周转量增加了多少？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量比货邮周转量降低了？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量比货邮周转量降低了？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量比货邮周转量变化了多少？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量比货邮周转量变了？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量与货邮周转量相比降低了多少？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量与货邮周转量比，降低了多少？'), ['indexes_n_compare'])
+        self.assertEqual(self.check_question('11年旅客周转量与货邮周转量比较 降低了多少？'), ['indexes_n_compare'])
         # 反例
-        self.assertEqual(self.check_question('2011年游客周转量,货邮周转量比运输总周转量降低了？'), [])
+        self.assertEqual(self.check_question('2011年旅客周转量,货邮周转量比运输总周转量降低了？'), [])
 
         # 同比变化（只与前一年比较）
-        self.assertEqual(self.check_question('2012年游客周转量同比增长多少？'), ['indexes_g_compare'])
-        self.assertEqual(self.check_question('2012年游客周转量同比下降百分之几？'), ['indexes_g_compare'])
-        self.assertEqual(self.check_question('2012年游客周转量和货邮周转量同比下降百分之几？'), ['indexes_g_compare'])
+        self.assertEqual(self.check_question('2012年旅客周转量同比增长多少？'), ['indexes_g_compare'])
+        self.assertEqual(self.check_question('2012年旅客周转量同比下降百分之几？'), ['indexes_g_compare'])
+        self.assertEqual(self.check_question('2012年旅客周转量和货邮周转量同比下降百分之几？'), ['indexes_g_compare'])
         # 反例
-        self.assertEqual(self.check_question('2012年游客周转量同比13年下降百分之几？'), [])
+        self.assertEqual(self.check_question('2012年旅客周转量同比13年下降百分之几？'), [])
 
     def test_indexes_2_compare(self):
         self.assertEqual(self.check_question('2011年游客周转量是12年的百分之几？'), ['indexes_2m_compare'])

@@ -136,7 +136,7 @@ class QuestionClassifier:
                         result.add_qtype('index_overall')
                 # 值比较(同类同单位)
                 if result.count('index') < 2:
-                    self.extract_index(result)
+                    self.extract_index(result, ratio_threshold=0.7)
                     question = result.filtered_question  # 重新查询后更新
                 if result.count('index') == 2 and 'area' not in result:
                     if check_regexp(question, MultipleCmp1, functions=[

@@ -140,7 +140,9 @@ class CivilAviationKnowledgeGraph:
     def export_fast_index_table(self):
         """ 导出指标快表 """
         striped = ['的', '比', '一', '三', '0', '1', '与', '年', '占', '有', '增', '长',
-                   '减', '大', '小', '上', '直', '和']
+                   '减', '大', '小', '上', '直', '和', '~', '为', '实', '现', '双', '原',
+                   '全', '额', '计', '部', '个', '地', '区', '行', '目', '基', '例', '常',
+                   '时']
         fast_table = set(''.join(self.entities['I']))
         for char in striped:
             fast_table.remove(char)

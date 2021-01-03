@@ -29,12 +29,16 @@ class Answer:
         self._answers.append('，'.join(self._sub_answers))
 
     @classmethod
-    def product_name(cls, *name: list):
+    def product_name(cls, *name: list, flatten: bool = False):
         """ 对传入的名称进行笛卡尔积
         eg: [1,2],[a,b] => (1,a),(1,b),(2,a),(2,b)
+            if flatten  =>  1a, 1b, 2a, 2b
         """
         for n in product(*name):
-            yield n
+            if len(n) == 1:
+                yield n[0]
+            else:
+                yield ''.join(n) if flatten else n
 
     @classmethod
     def product_repeat(cls, feeds: list, n: int):
@@ -80,8 +84,19 @@ class Answer:
         finally:
             return res
 
-    def product_data_with_name(self, *names, if_is_none: FunctionType = None):
-        for item, name in zip(self._data, self.product_name(*names)):
+    @classmethod
+    def group_mapping_to_float(cls, x: list, unpack_name: str) -> list:
+        """ 把x映射为float值序列 """
+        res = None
+        try:
+            res = [float(e[0][unpack_name]) for e in x]
+        except ValueError or TypeError:
+            res = None
+        finally:
+            return res
+
+    def product_data_with_name(self, *names, if_is_none: FunctionType = None, flatten: bool = False):
+        for item, name in zip(self._data, self.product_name(*names, flatten=flatten)):
             if if_is_none is None:
                 yield item, name
             else:
@@ -92,10 +107,12 @@ class Answer:
 
     def product_data_with_feed(self, *names,
                                if_x_is_none: FunctionType,
-                               if_y_is_none: FunctionType):
+                               if_y_is_none: FunctionType,
+                               flatten: bool = False):
         data1, data2, feed = self._data
         n = len(data2) // len(feed)
-        for item1, item2, feed, name in zip(data1, data2, self.product_repeat(feed, n), self.product_name(*names)):
+        for item1, item2, feed, name in zip(data1, data2, self.product_repeat(feed, n),
+                                            self.product_name(*names, flatten=flatten)):
             if self.binary_decision(item1, item2,
                                     not_x=if_x_is_none(item1, item2, feed, name),
                                     not_y=if_y_is_none(item1, item2, feed, name)):
@@ -103,9 +120,10 @@ class Answer:
 
     def product_data_with_binary(self, *names,
                                  if_x_is_none: FunctionType,
-                                 if_y_is_none: FunctionType):
+                                 if_y_is_none: FunctionType,
+                                 flatten: bool = False):
         for item, name in zip(self.product_binary(self._data),
-                              self.product_binary([n for n in self.product_name(*names)])):
+                              self.product_binary([n for n in self.product_name(*names, flatten=flatten)])):
             x, y = item
             if self.binary_decision(x, y,
                                     not_x=if_x_is_none(x, y, name),
