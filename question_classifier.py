@@ -173,14 +173,9 @@ class QuestionClassifier:
                             result.add_qtype('areas_g_compare')
                     else:
                         result.add_qtype('indexes_g_compare')
-                # 指标下不同地区组成情况
-                if check_contain(self.location_rwds, question):
-                    if check_contain(self.status_rwds, question):
-                        result.add_qtype('area_compose')
-                # 指标的子组成
-                else:
-                    if check_contain(self.child_index_rwds, question):
-                        result.add_qtype('index_compose')
+                # 指标的组成
+                if check_contain(self.child_index_rwds, question):
+                    result.add_qtype('index_compose')
 
         # 问题与两个年份相关
         elif year_count == 2:

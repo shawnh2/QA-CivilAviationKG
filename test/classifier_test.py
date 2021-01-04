@@ -194,15 +194,6 @@ class QCTest(unittest.TestCase):
         # 反例
         self.assertEqual(self.check_question('2012年港澳台游客周转量比上一年的货邮周转量少多少？'), [])
 
-    # 指标的地区组成
-    def test_area_compose(self):
-        self.assertEqual(self.check_question('11年运输总周转量各地情况如何？'), ['area_compose'])
-        self.assertEqual(self.check_question('11年运输总周转量各地情况分布'), ['area_compose'])
-        self.assertEqual(self.check_question('11年运输总周转量各地情况怎样？'), ['area_compose'])
-        self.assertEqual(self.check_question('11年运输总周转量各区域情况怎样？'), ['area_compose'])
-        self.assertEqual(self.check_question('11年运输总周转量组成地区情况'), ['area_compose'])
-        self.assertEqual(self.check_question('11年运输总周转量和游客周转量的各组成地区情况'), ['area_compose'])
-
     # 指标值变化(多年份)
     def test_indexes_trend(self):
         self.assertEqual(self.check_question('2011-13年运输总周转量的变化趋势如何？'), ['indexes_trend'])

@@ -20,8 +20,7 @@ class QuestionParser:
 
         self.sql_find_I_parent = 'match (n:Index)-[r:contain]->(m:Index) where m.name="{i}" return n.name'
         self.sql_find_A_parent = 'match (n:Area)-[r:contain]->(m:Area) where m.name="{a}" return n.name'
-        self.sql_find_I_child = 'match (n:Index)-[r:contain]->(m:Index) where n.name="{i}" return m.name'
-        self.sql_find_A_I = 'match (i:Index)-[r:locate]->(a:Area) where i.name="{i}" return a.name'
+        self.sql_find_I_child = 'match (n:Index)-[]->(m) where n.name="{i}" return m.name,labels(m)[0]'
         self.sql_find_Is = 'match (y:Year)-[r:value]->(i:Index) where y.name="{y}" return i.name'
         self.sql_find_Cs = 'match (y:Year)-[r:include]->(c:Catalog) where y.name="{y}" return c.name'
         self.sql_find_begin_stats_Ys = 'match (y:Year)-[r:value]->(i:Index) where i.name="{i}" return y.name'
@@ -42,7 +41,7 @@ class QuestionParser:
             elif qt in ('index_2_overall', 'indexes_overall_trend'):
                 self.trans_indexes_overall(result['year'], result['index'])
             elif qt == 'index_compose':
-                self.trans_index_compose(result['index'])
+                self.trans_index_compose(result['year'], result['index'])
             elif qt in ('indexes_2m_compare', 'indexes_2n_compare'):
                 self.trans_indexes_mn_compare(result['year'], result['index'])
             elif qt == 'indexes_g_compare':
@@ -53,8 +52,6 @@ class QuestionParser:
                 self.trans_area_overall(result['year'], result['area'], result['index'])
             elif qt in ('area_2_overall', 'areas_overall_trend'):
                 self.trans_areas_overall(result['year'], result['area'], result['index'])
-            elif qt == 'area_compose':
-                self.trans_area_compose(result['year'], result['index'])
             elif qt in ('areas_2m_compare', 'areas_2n_compare'):
                 self.trans_areas_mn_compare(result['year'], result['area'], result['index'])
             elif qt == 'areas_g_compare':
@@ -126,8 +123,11 @@ class QuestionParser:
                   .then([self.sql_I_value.format(y=y, i='{}') for y in years])
 
     # 指标组成
-    def trans_index_compose(self, indexes):
-        self.chain.make([self.sql_find_I_child.format(i=i) for i in indexes])
+    def trans_index_compose(self, years, indexes):
+        self.chain.make([self.sql_find_I_child.format(i=i) for i in indexes]) \
+                  .then([self.sql_I_value.format(y=years[0], i='{}') + ',r.child_id']) \
+                  .then([self.sql_A_value.format(y=years[0], i='{}', a='{}') + ',r.child_id']) \
+                  .then([self.sql_I_value.format(y=years[0], i=i) for i in indexes])
 
     # 地区指标值
     def trans_area_value(self, years, areas, indexes):
@@ -158,11 +158,6 @@ class QuestionParser:
         self.chain.make([[[self.sql_A_value.format(y=y, i=i, a=a) for y in years] for a in areas] for i in indexes])\
                   .then([self.sql_find_A_parent.format(a=a) for a in areas])\
                   .then([[self.sql_A_value.format(y=y, i=i, a='{}') for y in years] for i in indexes])
-
-    # 地区指标组成
-    def trans_area_compose(self, years, indexes):
-        self.chain.make([self.sql_find_A_I.format(i=i) for i in indexes])\
-                  .then([self.sql_A_value.format(y=years[0], i=i, a='{}') for i in indexes])
 
     # 何时开始统计此项指标
     def trans_begin_stats(self, indexes):

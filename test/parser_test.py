@@ -13,7 +13,7 @@ class QPTest:
     def parse(self, question: str):
         res = self.qc.classify(question)
         if res.is_qt_null():
-            print('[pass]', question)
+            print('[err]', question)
         else:
             print(self.qp.parse(res).sqls)
 
@@ -24,7 +24,6 @@ class QPTest:
         self.test_index_overall()
         self.test_area_overall()
         self.test_index_compose()
-        self.test_area_compose()
         self.test_indexes_2mn_compare()
         self.test_areas_2mn_compare()
         self.test_indexes_g_compare()
@@ -70,11 +69,6 @@ class QPTest:
         self.parse('2011年游客周转量的子集有？')
         self.parse('2011年游客周转量的组成？')
         self.parse('2011年游客周转量的子指标组成情况？')
-
-    def test_area_compose(self):
-        self.parse('11年运输总周转量各地情况如何？')
-        self.parse('11年运输总周转量各地情况分布')
-        self.parse('11年运输总周转量各地情况怎样？')
 
     def test_indexes_2mn_compare(self):
         self.parse('2011年游客周转量是12年的百分之几？')
