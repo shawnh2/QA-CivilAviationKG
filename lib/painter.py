@@ -14,7 +14,7 @@ class Painter:
         if not os.path.exists('results'):
             os.mkdir('results')
 
-    def paint_bar(self, x: list, *y: tuple, unit: str, title: str):
+    def paint_bar(self, x: list, *y: tuple, unit: str, title: str,  mark_point: bool = False):
         bar = Bar(init_opts=opts.InitOpts(theme=ThemeType.LIGHT))
         bar.add_xaxis(x)
         for name, data in y:
@@ -30,6 +30,16 @@ class Painter:
             label_opts=opts.LabelOpts(position='top'),
             tooltip_opts=opts.TooltipOpts(formatter=f'{{b}}年{{a}}：{{c}}{unit}')
         )
+        if mark_point:
+            bar.set_series_opts(
+                markpoint_opts=opts.MarkPointOpts(
+                    data=[
+                        opts.MarkPointItem(type_='max', name='最大值'),
+                        opts.MarkPointItem(type_='min', name='最小值')
+                    ],
+                    symbol_size=80
+                )
+            )
         return bar
 
     def paint_pie(self, data_pairs: list, units: list, title: str, sub_titles: list):
@@ -109,6 +119,13 @@ class Painter:
             bar.overlap(line)
             page.add(bar)
         return page
+
+    def paint_line(self, x: list, tag: str, y: list, title: str):
+        line = Line()
+        line.add_xaxis(x)
+        line.add_yaxis(tag, y)
+        line.set_global_opts(title_opts=opts.TitleOpts(title=title))
+        return line
 
     # render
 

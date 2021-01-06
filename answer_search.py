@@ -20,9 +20,11 @@ class AnswerSearcher:
     def search(self, result: Result):
         debug('||QUESTION ORIGINAL||', result.raw_question)
         debug('||QUESTION FILTERED||', result.filtered_question)
+        answers = []
         for qt, chain in result.sqls.items():
             answer = self.organize(qt, chain, result)
-            print(answer, '\n')
+            answers.append(answer.rstrip('。') + '。')
+        return ''.join(answers)
 
     def _search_direct(self, sql_gen, offset: int = 0, unpack: bool = False) -> list:
         """ 进行直接查询 """
@@ -134,12 +136,21 @@ class AnswerSearcher:
         # 两年目录的变化 & 两年指标的变化
         elif qt in ('catalog_change', 'index_change'):
             self.make_catalog_or_index_change_ans(qt, answer, chain, result)
+        # 多年目录的变化 & 多年指标的变化
+        elif qt in ('catalogs_change', 'indexes_change'):
+            self.make_catalogs_or_indexes_change_ans(qt, answer, chain, result)
         # 指标值变化(多年份)
         elif qt in ('indexes_trend', 'areas_trend'):
             self.make_indexes_or_areas_trend_ans(qt, answer, chain, result)
         # 占总指标比的变化
         elif qt in ('indexes_overall_trend', 'areas_overall_trend'):
-            self.make_indexes_or_areas_overall_trend(qt, answer, chain, result)
+            self.make_indexes_or_areas_overall_trend_ans(qt, answer, chain, result)
+        # 几个年份中的最值
+        elif qt in ('indexes_max', 'areas_max'):
+            self.make_indexes_or_areas_max_ans(qt, answer, chain, result)
+        # 何时开始统计此指标
+        elif qt == 'begin_stats':
+            self.make_begin_stats_ans(answer, chain, result)
 
         return answer.to_string()
 
@@ -460,7 +471,16 @@ class AnswerSearcher:
         ):
             answer.add_answer(f'{result["year"][0]}年与{result["year"][1]}年相比，未统计{n2}个{tag_name}：' + '、'.join(diff2))
 
-    def make_indexes_or_areas_trend_ans(self, qt: str, answer: Answer, chain: TranslationChain, result: Result):
+    def make_catalogs_or_indexes_change_ans(self, qt: str, answer: Answer, chain: TranslationChain, result: Result):
+        tag = '目录' if qt == 'catalogs_change' else '指标'
+        data = self._search_direct(chain)
+        y = [len(item) for item in data]
+        line = self.painter.paint_line(result['year'], f'{tag}个数', y, result.raw_question)
+        path = self.painter.render_html(line, result.raw_question)
+        answer.add_answer(f'该问题的回答已渲染为图像，详见：{path}')
+
+    def make_indexes_or_areas_trend_ans(self, qt: str, answer: Answer, chain: TranslationChain, result: Result,
+                                        mark_point: bool = False):
         if qt == 'areas_trend':
             unpack = True
             gen = [result['area'], result['index']]
@@ -478,11 +498,12 @@ class AnswerSearcher:
         # paint
         if len(ys) != 0:
             unit = data[0][0][0]['r.unit']
-            bar = self.painter.paint_bar(result['year'], *ys, unit=unit, title=result.raw_question)
+            bar = self.painter.paint_bar(result['year'], *ys, unit=unit,
+                                         title=result.raw_question, mark_point=mark_point)
             path = self.painter.render_html(bar, result.raw_question)
             answer.add_answer(f'该问题的回答已渲染为图像，详见：{path}')
 
-    def make_indexes_or_areas_overall_trend(self, qt: str, answer: Answer, chain: TranslationChain, result: Result):
+    def make_indexes_or_areas_overall_trend_ans(self, qt: str, answer: Answer, chain: TranslationChain, result: Result):
         if qt == 'areas_overall_trend':
             unpack = True
             gen = [result["area"], result["index"]]
@@ -515,3 +536,17 @@ class AnswerSearcher:
             bar = self.painter.paint_bar_stack_with_line(result['year'], children, parents, result.raw_question)
             path = self.painter.render_html(bar, result.raw_question)
             answer.add_answer(f'该问题的回答已渲染为图像，详见：{path}')
+
+    def make_indexes_or_areas_max_ans(self, qt: str, answer: Answer, chain: TranslationChain, result: Result):
+        # 可以直接复用
+        if qt == 'areas_max':
+            self.make_indexes_or_areas_trend_ans('areas_trend', answer, chain, result, mark_point=True)
+        else:
+            self.make_indexes_or_areas_trend_ans('indexes_trend', answer, chain, result, mark_point=True)
+
+    def make_begin_stats_ans(self, answer: Answer, chain: TranslationChain, result: Result):
+        data = self._search_direct(chain)
+        answer.feed_data(data)
+        for item, name in answer.product_data_with_name(result['index']):
+            years = [int(year['y.name']) for year in item]
+            answer.add_answer(f'指标“{name}”最早于{min(years)}年开始统计')
