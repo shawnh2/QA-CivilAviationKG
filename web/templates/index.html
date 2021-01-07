@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>民航公报咨询室</title>
+<!--    <link href="../static/style/index.css" rel="stylesheet" type="text/css">-->
+    <link href="{{ url_for('static', filename='style/index.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id="chatroom">
+    <div id="output-area">
+        <div class="null" style="height: 100%"></div>
+    </div>
+    <div id="input-area">
+        <label>
+            <textarea placeholder="输入问题后按Enter键或点击“发送”按钮进行提问" id="input-dialog"></textarea>
+        </label>
+    </div>
+    <div id="buttons-area">
+        <button id="send-btn">发送</button>
+        <button id="clear-btn">清空</button>
+    </div>
+</div>
+</body>
+<!--<script src="../static/js/func.js" type="text/javascript"></script>-->
+<script src="{{ url_for('static', filename='js/func.js') }}" type="text/javascript"></script>
+</html>
