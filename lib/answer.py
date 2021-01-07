@@ -89,7 +89,7 @@ class Answer:
         """ 把x映射为float值序列 """
         res = None
         try:
-            res = [float(e[0][unpack_name]) for e in x]
+            res = [float(e[unpack_name]) for e in x]
         except ValueError or TypeError:
             res = None
         finally:

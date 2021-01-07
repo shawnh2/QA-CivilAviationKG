@@ -204,6 +204,7 @@ class QuestionClassifier:
                     if check_regexp(question, *NumberCmp2, functions=[
                         lambda x: check_contain(result['index'], x[0]),
                         lambda x: check_contain(result['index'], x[0]),
+                        lambda x: check_contain(result['index'], x[0]),
                         lambda x: check_contain(result['index'], x[0][-1])
                     ]):
                         if 'area' not in result:  # 不涉及地区
