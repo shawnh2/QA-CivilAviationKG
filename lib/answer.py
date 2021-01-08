@@ -7,8 +7,8 @@ class Answer:
 
     def __init__(self):
         self._answers = []
-        self._data = None
         self._sub_answers = []
+        self._chart = None  # 保存图表，用于渲染jupyter notebook
 
     def add_answer(self, string: str):
         self._answers.append(string)
@@ -16,8 +16,11 @@ class Answer:
     def to_string(self) -> str:
         return "；".join(self._answers)
 
-    def feed_data(self, data):
-        self._data = data
+    def save_chart(self, chart):
+        self._chart = chart
+
+    def get_chart(self):
+        return self._chart
 
     def begin_sub_answers(self):
         self._sub_answers.clear()
@@ -27,6 +30,16 @@ class Answer:
 
     def end_sub_answers(self):
         self._answers.append('，'.join(self._sub_answers))
+
+
+class AnswerBuilder:
+
+    def __init__(self, answer: Answer):
+        self._data = None
+        self.answer = answer
+
+    def feed_data(self, data):
+        self._data = data
 
     @classmethod
     def product_name(cls, *name: list, flatten: bool = False):
@@ -101,7 +114,7 @@ class Answer:
                 yield item, name
             else:
                 if item is None:
-                    self.add_answer(if_is_none(item, name))
+                    self.answer.add_answer(if_is_none(item, name))
                 else:
                     yield item, name
 
@@ -141,9 +154,9 @@ class Answer:
         if x and y:
             dec = True
         elif not x:
-            self.add_answer(not_x)
+            self.answer.add_answer(not_x)
         else:
-            self.add_answer(not_y)
+            self.answer.add_answer(not_y)
         return dec
 
     def add_if_is_equal_or_not(self, x, y, no: str,
@@ -153,9 +166,9 @@ class Answer:
         add_no = (x != y) if equal else (x == y)
         if add_no:
             if to_sub:
-                self.add_sub_answers(no)
+                self.answer.add_sub_answers(no)
             else:
-                self.add_answer(no)
+                self.answer.add_answer(no)
             return False
         return True
 
@@ -163,8 +176,8 @@ class Answer:
         """ 如果x为None，就把no加入answers中 """
         if x is None:
             if to_sub:
-                self.add_sub_answers(no)
+                self.answer.add_sub_answers(no)
             else:
-                self.add_answer(no)
+                self.answer.add_answer(no)
             return False
         return True

@@ -214,6 +214,7 @@ class QuestionClassifier:
                                 if check_regexp(question, *NumberCmp2, functions=[
                                     lambda x: check_contain(result['area'], x[0]),
                                     lambda x: check_contain(result['area'], x[0]),
+                                    lambda x: check_contain(result['area'], x[0]),
                                     lambda x: check_contain(result['area'], x[0][0]),
                                 ]):
                                     result.add_qtype('areas_2n_compare')

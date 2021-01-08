@@ -1,25 +1,17 @@
 import unittest
 import os
 
-from question_classifier import QuestionClassifier
-from question_parser import QuestionParser
-from answer_search import AnswerSearcher
+from chatbot import CAChatBot
 
 os.chdir(os.path.join(os.getcwd(), '..'))
 
 
 class AnswerTest(unittest.TestCase):
 
-    qc = QuestionClassifier()
-    qp = QuestionParser()
-    ss = AnswerSearcher()
+    bot = CAChatBot()
 
     def search(self, question: str):
-        res = self.qc.classify(question)
-        if res is None or res.is_qt_null():
-            return None
-        res = self.qp.parse(res)
-        ans = self.ss.search(res)
+        ans = self.bot.query(question)
         return ans
 
     def test_year_status(self):
@@ -30,7 +22,7 @@ class AnswerTest(unittest.TestCase):
         self.assertEqual(self.search('2011年发展如何？'),
                          '2011年，全年航空安全形势稳定，旅客运输和通用航空保持较快增长，运行质量和经济效益得到提升，基础设施建设取得新成绩，结构调整和深化改革迈出新步伐，党的建设和行业文化建设得到加强。')
         self.assertEqual(self.search('15年形势怎样？'),
-                         None)
+                         '抱歉！小航能力有限，无法回答您这个问题。可以联系开发者哟！')
 
     def test_catalog_status(self):
         self.assertEqual(self.search('2011年运输航空总体情况怎样？'),
