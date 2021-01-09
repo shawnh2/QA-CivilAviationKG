@@ -9,7 +9,8 @@ from lib.answer import Answer, AnswerBuilder
 from lib.painter import Painter
 from lib.formatter import Formatter
 from lib.chain import TranslationChain
-from const import URI, USERNAME, PASSWORD
+
+from const import URI, USERNAME, PASSWORD, CHART_RENDER_DIR
 
 
 class AnswerSearcher:
@@ -259,10 +260,10 @@ class AnswerSearcher:
             units.append(total['r.unit'])
             sub_titles.append(f'{name}为{total["r.value"]}{total["r.unit"]}，其构成分为：')
         # paint
-        pie = self.painter.paint_pie(collect, units, title=result.raw_question, sub_titles=sub_titles)
-        path = self.painter.render_html(pie, result.raw_question)
-        answer.save_chart(pie)
-        answer.add_answer(f'该问题的回答已渲染为图像，详见：{path}')
+        for pie in self.painter.paint_pie(collect, units,
+                                          title=result.raw_question, sub_titles=sub_titles):
+            answer.save_chart(pie)
+        answer.add_answer(f'该问题的回答已渲染为图像，详见：{CHART_RENDER_DIR}/{result.raw_question}.html')
 
     def make_indexes_m_or_n_compare_ans(self, qt: str, answer: Answer, builder: AnswerBuilder,
                                         chain: TranslationChain, result: Result):
@@ -492,9 +493,8 @@ class AnswerSearcher:
         data = self._search_direct(chain)
         y = [len(item) for item in data]
         line = self.painter.paint_line(result['year'], f'{tag}个数', y, result.raw_question)
-        path = self.painter.render_html(line, result.raw_question)
         answer.save_chart(line)
-        answer.add_answer(f'该问题的回答已渲染为图像，详见：{path}')
+        answer.add_answer(f'该问题的回答已渲染为图像，详见：{CHART_RENDER_DIR}/{result.raw_question}.html')
 
     def make_indexes_or_areas_trend_ans(self, qt: str, answer: Answer, builder: AnswerBuilder,
                                         chain: TranslationChain, result: Result, mark_point: bool = False):
@@ -517,9 +517,8 @@ class AnswerSearcher:
             unit = data[0][0]['r.unit']
             bar = self.painter.paint_bar(result['year'], *ys, unit=unit,
                                          title=result.raw_question, mark_point=mark_point)
-            path = self.painter.render_html(bar, result.raw_question)
             answer.save_chart(bar)
-            answer.add_answer(f'该问题的回答已渲染为图像，详见：{path}')
+            answer.add_answer(f'该问题的回答已渲染为图像，详见：{CHART_RENDER_DIR}/{result.raw_question}.html')
 
     def make_indexes_or_areas_overall_trend_ans(self, qt: str, answer: Answer, builder: AnswerBuilder,
                                                 chain: TranslationChain, result: Result):
@@ -552,10 +551,10 @@ class AnswerSearcher:
             children.setdefault((parent, unit), []).append((n, xs, overall))
         # paint
         if len(parents) != 0:
-            bar = self.painter.paint_bar_stack_with_line(result['year'], children, parents, result.raw_question)
-            path = self.painter.render_html(bar, result.raw_question)
-            answer.save_chart(bar)
-            answer.add_answer(f'该问题的回答已渲染为图像，详见：{path}')
+            for bar in self.painter.paint_bar_stack_with_line(result['year'], children, parents,
+                                                              result.raw_question):
+                answer.save_chart(bar)
+            answer.add_answer(f'该问题的回答已渲染为图像，详见：{CHART_RENDER_DIR}/{result.raw_question}.html')
 
     def make_indexes_or_areas_max_ans(self, qt: str, answer: Answer, builder: AnswerBuilder,
                                       chain: TranslationChain, result: Result):

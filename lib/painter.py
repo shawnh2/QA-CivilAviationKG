@@ -1,18 +1,18 @@
 # 图表绘制器
 import os
 
-from pyecharts.charts import Bar, Pie, Page, Line
+from pyecharts.charts import Bar, Pie, Line
 from pyecharts import options as opts
 from pyecharts.globals import ThemeType
+
+from const import CHART_RENDER_DIR
 
 
 class Painter:
 
     def __init__(self, ):
-        self.path = 'results/qa-cakg-{}.html'
-
-        if not os.path.exists('results'):
-            os.mkdir('results')
+        if not os.path.exists(CHART_RENDER_DIR):
+            os.mkdir(CHART_RENDER_DIR)
 
     def paint_bar(self, x: list, *y: tuple, unit: str, title: str,  mark_point: bool = False):
         bar = Bar(init_opts=opts.InitOpts(theme=ThemeType.LIGHT))
@@ -43,7 +43,6 @@ class Painter:
         return bar
 
     def paint_pie(self, data_pairs: list, units: list, title: str, sub_titles: list):
-        page = Page()
         old_i = i = 10
         j = 60
         for data_pair, unit, sub_title in zip(data_pairs, units, sub_titles):
@@ -69,12 +68,10 @@ class Painter:
                 label_opts=opts.LabelOpts(is_show=False),
                 tooltip_opts=opts.TooltipOpts(formatter='{b}：{c}{a}（{d}%）')
             )
-            page.add(pie)
             i = old_i
-        return page
+            yield pie
 
     def paint_bar_stack_with_line(self, x: list, children: dict, parents: dict, sub_title: str):
-        page = Page()
         for (parent_name, unit), item in children.items():
             bar = Bar(init_opts=opts.InitOpts(theme=ThemeType.MACARONS))
             bar.add_xaxis(x)
@@ -118,8 +115,7 @@ class Painter:
                 )
             )
             bar.overlap(line)
-            page.add(bar)
-        return page
+            yield bar
 
     def paint_line(self, x: list, tag: str, y: list, title: str):
         line = Line()
@@ -127,10 +123,3 @@ class Painter:
         line.add_yaxis(tag, y)
         line.set_global_opts(title_opts=opts.TitleOpts(title=title))
         return line
-
-    # render
-
-    def render_html(self, chart, name: str) -> str:
-        path = self.path.format(name)
-        chart.render(path)
-        return path

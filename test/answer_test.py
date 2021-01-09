@@ -256,13 +256,13 @@ class AnswerTest(unittest.TestCase):
 
     def test_index_compose(self):
         self.assertEqual(self.search('2011年运输总周转量的子集有？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011年运输总周转量的子集有？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011年运输总周转量的子集有？.html。')
         self.assertEqual(self.search('2011年航空公司计划航班的组成？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011年航空公司计划航班的组成？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011年航空公司计划航班的组成？.html。')
         self.assertEqual(self.search('2011年指标停用机场的组成有哪些？'),
                          '指标“停用机场”没有任何组成。')
         self.assertEqual(self.search('2011年全行业累计实现营业收入的子指标组成情况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011年全行业累计实现营业收入的子指标组成情况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011年全行业累计实现营业收入的子指标组成情况？.html。')
         self.assertEqual(self.search('2011年运输总周转量和货邮周转量的子指标组成情况？'),
                          '指标“货邮周转量”没有任何组成。')
 
@@ -282,49 +282,49 @@ class AnswerTest(unittest.TestCase):
 
     def test_indexes_change(self):
         self.assertEqual(self.search('2011-13年指标变化情况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年指标变化情况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年指标变化情况？.html。')
         self.assertEqual(self.search('2011-13年指标变化趋势情况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年指标变化趋势情况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年指标变化趋势情况？.html。')
 
     def test_catalogs_change(self):
         self.assertEqual(self.search('2011-13年目录变化情况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年目录变化情况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年目录变化情况？.html。')
         self.assertEqual(self.search('2011-13年规范趋势情况变化？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年规范趋势情况变化？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年规范趋势情况变化？.html。')
 
     def test_indexes_trend(self):
         self.assertEqual(self.search('2011-13年运输总周转量的变化趋势如何？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年运输总周转量的变化趋势如何？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年运输总周转量的变化趋势如何？.html。')
         self.assertEqual(self.search('2011-13年节能减排情况？'),
                          '指标“节能减排”非数值类型，无法比较。')
         self.assertEqual(self.search('2011-13年运输总周转量和旅客周转量情况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年运输总周转量和旅客周转量情况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年运输总周转量和旅客周转量情况？.html。')
         self.assertEqual(self.search('2011-14年运输总周转量值分布状况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-14年运输总周转量值分布状况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-14年运输总周转量值分布状况？.html。')
         self.assertEqual(self.search('2013年运输总周转量值与前两年相比变化状况如何？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2013年运输总周转量值与前两年相比变化状况如何？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2013年运输总周转量值与前两年相比变化状况如何？.html。')
 
     def test_areas_trend(self):
         self.assertEqual(self.search('2011-13年国内运输总周转量的变化趋势如何？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年国内运输总周转量的变化趋势如何？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年国内运输总周转量的变化趋势如何？.html。')
         self.assertEqual(self.search('2011-13年国际运输总周转量情况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年国际运输总周转量情况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年国际运输总周转量情况？.html。')
         self.assertEqual(self.search('2011-13年港澳台运输总周转量值分布状况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年港澳台运输总周转量值分布状况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年港澳台运输总周转量值分布状况？.html。')
 
     def test_indexes_overall_trend(self):
         self.assertEqual(self.search('2011-13年货邮周转量占总体的比例的变化形势？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年货邮周转量占总体的比例的变化形势？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年货邮周转量占总体的比例的变化形势？.html。')
         self.assertEqual(self.search('2011-13年货邮周转量和货邮吞吐量占总体的比例的变化形势？'),
-                         '无关于”货邮吞吐量“的父级记录；该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年货邮周转量和货邮吞吐量占总体的比例的变化形势？.html。')
+                         '无关于”货邮吞吐量“的父级记录；该问题的回答已渲染为图像，详见：results/2011-13年货邮周转量和货邮吞吐量占总体的比例的变化形势？.html。')
         self.assertEqual(self.search('2011-13年货邮周转量和小型飞机平均日利用率占总体的比例的变化形势？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年货邮周转量和小型飞机平均日利用率占总体的比例的变化形势？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年货邮周转量和小型飞机平均日利用率占总体的比例的变化形势？.html。')
         self.assertEqual(self.search('2011-13年停用机场占父级指标比的情况？'),
                          '无关于”停用机场“的父级记录。')
         self.assertEqual(self.search('2011-13年民航直属院校在校研究生占总比的分布状况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年民航直属院校在校研究生占总比的分布状况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年民航直属院校在校研究生占总比的分布状况？.html。')
         self.assertEqual(self.search('2011-13年民航直属院校在校研究生和民航直属院校在校中专生占总比的分布状况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年民航直属院校在校研究生和民航直属院校在校中专生占总比的分布状况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年民航直属院校在校研究生和民航直属院校在校中专生占总比的分布状况？.html。')
 
     def test_areas_overall_trend(self):
         self.assertEqual(self.search('2011-13年国内运输总周转量占总体的比例的变化形势？'),
@@ -332,15 +332,15 @@ class AnswerTest(unittest.TestCase):
         self.assertEqual(self.search('2011-13年国际货邮周转量和旅客周转量占父级指标比的情况？'),
                          '无关于”国际货邮周转量“的记录。')
         self.assertEqual(self.search('2011-13年港澳台运输总周转量值占总比的分布状况？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年港澳台运输总周转量值占总比的分布状况？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年港澳台运输总周转量值占总比的分布状况？.html。')
 
     def test_indexes_and_areas_max(self):
         self.assertEqual(self.search('2011-13年运输总周转量最大值是？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年运输总周转量最大值是？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年运输总周转量最大值是？.html。')
         self.assertEqual(self.search('2011-13年运输总周转量最小值是哪一年？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年运输总周转量最小值是哪一年？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年运输总周转量最小值是哪一年？.html。')
         self.assertEqual(self.search('2011-13年国内运输总周转量最大值是？'),
-                         '该问题的回答已渲染为图像，详见：results/qa-cakg-2011-13年国内运输总周转量最大值是？.html。')
+                         '该问题的回答已渲染为图像，详见：results/2011-13年国内运输总周转量最大值是？.html。')
 
     def test_begin_stats(self):
         self.assertEqual(self.search('哪年统计了航空严重事故征候？'),

@@ -2,13 +2,17 @@
 from itertools import product
 from types import FunctionType
 
+from pyecharts.charts import Page
+
+from const import CHART_RENDER_DIR
+
 
 class Answer:
 
     def __init__(self):
         self._answers = []
         self._sub_answers = []
-        self._chart = None  # 保存图表，用于渲染jupyter notebook
+        self._charts = []  # 保存图表
 
     def add_answer(self, string: str):
         self._answers.append(string)
@@ -17,10 +21,29 @@ class Answer:
         return "；".join(self._answers)
 
     def save_chart(self, chart):
-        self._chart = chart
+        self._charts.append(chart)
+
+    def combine_charts(self):
+        # 若有大于一个以上的图表，将它们合为一个图表（Page类型）
+        # 不直接画到一个图表上，是因为在web app中无法直接嵌入Page类型，而其他模式均可以
+        if len(self._charts) > 1:
+            page = Page()
+            page.add(*self._charts)
+            self._charts.clear()
+            self.save_chart(page)
 
     def get_chart(self):
-        return self._chart
+        return None if not self.have_charts() else self._charts[0]
+
+    def get_charts(self):
+        return self._charts
+
+    def render_chart(self, name: str):
+        chart = self._charts[0]
+        chart.render(f'{CHART_RENDER_DIR}/{name}.html')
+
+    def have_charts(self):
+        return len(self._charts) != 0
 
     def begin_sub_answers(self):
         self._sub_answers.clear()

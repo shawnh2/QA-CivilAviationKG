@@ -51,7 +51,7 @@ $(function () {
                 'question': question,
             },
             success: function (data) {
-                console.log(data);
+                // console.log(data);
                 setTimeout(function () {
                     add_answer(data);
                 }, 500)
@@ -69,7 +69,36 @@ $(function () {
         answerElm.innerText = '[A' + inputCount + ']：' + data['answer'];
         // add to output area
         outputArea.appendChild(answerElm);
+        // if it has chart
+        for(var i = 0; i < data['chart_count']; i++) {
+            // create chart canvas
+            let chartElm = document.createElement('div');
+            chartElm.className = 'answer-chart';
+            chartElm.id = 'chart-' + inputCount + '-' + i;
+            // add to output area
+            outputArea.appendChild(chartElm);
+            get_chart(chartElm.id, i);
+        }
         stick_to_bottom();
+    }
+
+    function get_chart(chart_id, chart_index) {
+        var chart = echarts.init(document.getElementById(chart_id), 'white', {renderer: 'canvas'});
+        $.ajax({
+            type: 'GET',
+            url: '/chart',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: {
+                'chart_index': chart_index,
+            },
+            success: function (result) {
+                chart.setOption(result)
+            },
+            error: function (msg) {
+                console.log(msg)
+            }
+        });
     }
 
     function stick_to_bottom() {

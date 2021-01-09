@@ -2,7 +2,7 @@ from lib.chain import TranslationChain
 
 
 class Result(object):
-    """ 保存查询的结果 """
+    """ 保存查询使用的信息 """
     def __init__(self, region_wds: dict, raw_q: str, filtered_q: str):
         # 特征词
         self.region_wds = region_wds  # word: type_

@@ -72,3 +72,9 @@ body {
     padding: 10px 15px;
     margin: 15px;
 }
+
+.answer-chart {
+    width: 70%;
+    height: 500px;
+    padding: 10px 15px;
+}
