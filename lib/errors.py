@@ -4,6 +4,7 @@ from lib.check import check_contain
 
 class QuestionError(Exception):
     """ 问题错误 """
+    pass
 
 
 class QuestionOrderError(QuestionError):
@@ -23,4 +24,4 @@ class QuestionYearOverstep(QuestionError):
     @staticmethod
     def check(year: int):
         if year > 2019 or year < 2011:
-            raise QuestionYearOverstep(f'年报中并未记录"{year}"年的数据！')
+            raise QuestionYearOverstep(f'年报中并未记录“{year}”年的数据！')

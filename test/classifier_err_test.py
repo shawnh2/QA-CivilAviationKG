@@ -16,7 +16,7 @@ class QCErrTest(unittest.TestCase):
         self.assertEqual(self.query('11年总量是港澳台运输总周转量的多少倍？'), '不明白你所指的“总量”。是问反了吗？')
 
     def test_overstep_err(self):
-        self.assertEqual(self.query('11年游客周转量同比增长？'), '年报中并未记录"2010"年的数据！')
+        self.assertEqual(self.query('11年游客周转量同比增长？'), '年报中并未记录“2010”年的数据！')
 
 
 if __name__ == '__main__':

@@ -17,9 +17,12 @@ def send_answer():
     global temp_charts
 
     question = request.values.get('question')
-    answer, charts = chatbot.query(question)
+    answers = chatbot.query(question)
+    charts = []
+    if len(answers) == 2:
+        answers, charts = answers
     temp_charts = charts
-    return jsonify({'answer': answer, 'chart_count': len(charts)})
+    return jsonify({'answer': answers, 'chart_count': len(charts)})
 
 
 @main.route('/chart', methods=['GET', 'POST'])

@@ -51,7 +51,7 @@ Pygments==2.7.3
 pyparsing==2.4.7
 pyrsistent==0.17.3
 python-dateutil==2.8.1
-python-Levenshtein @ file:///D:/downloads/python_Levenshtein-0.12.0-cp37-cp37m-win_amd64.whl
+python-Levenshtein
 pytz==2020.1
 pywin32==300
 pywinpty==0.5.7
