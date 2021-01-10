@@ -78,3 +78,12 @@ body {
     height: 500px;
     padding: 10px 15px;
 }
+
+.answer-error {
+    text-align: left;
+    padding: 10px 15px;
+    margin: 15px;
+    background-color: crimson;
+    color: white;
+    border-radius: 10px;
+}

@@ -4,7 +4,7 @@ from . import main
 from chatbot import CAChatBot
 
 chatbot = CAChatBot(mode='web')
-temp_charts = None
+temp_charts = []
 
 
 @main.route('/')

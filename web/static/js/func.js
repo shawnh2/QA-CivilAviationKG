@@ -1,3 +1,5 @@
+// web app 中最基本的功能
+
 var inputCount = 0;
 let flag = true; // null placeholder
 
@@ -57,7 +59,8 @@ $(function () {
                 }, 500)
             },
             error: function (msg) {
-                console.log(msg);
+                // console.log(msg);
+                show_error(msg);
             }
         });
     }
@@ -93,14 +96,25 @@ $(function () {
                 'chart_index': chart_index,
             },
             success: function (result) {
-                chart.setOption(result)
+                chart.setOption(result);
             },
             error: function (msg) {
-                console.log(msg)
+                // console.log(msg);
+                show_error(msg);
             }
         });
     }
 
+    // 错误
+    function show_error(msg) {
+        let errElm = document.createElement('div');
+        errElm.className = 'answer-error';
+        errElm.innerText = msg.toString();
+        outputArea.appendChild(errElm);
+        stick_to_bottom();
+    }
+
+    // 保持发出的问题框在最底下
     function stick_to_bottom() {
         // always stick to bottom
         let n = outputArea.scrollHeight - outputArea.clientHeight;

@@ -114,8 +114,8 @@ class AnswerSearcher:
         # 指标倍数比较（只有两个指标） & 指标数量比较（只有两个指标）
         elif qt in ('indexes_m_compare', 'indexes_n_compare'):
             self.make_indexes_m_or_n_compare_ans(qt, answer, builder, chain, result)
-        elif qt in ('indexes_2m_compare', 'indexes_2n_compare'):
-            self.make_indexes_2m_or_2n_compare_ans(qt, answer, builder, chain, result)
+        elif qt in ('indexes_2m_compare', 'indexes_2n_compare', 'areas_2m_compare', 'areas_2n_compare'):
+            self.make_indexes_or_areas_2m_or_2n_compare_ans(qt, answer, builder, chain, result)
         # 指标值同比比较
         elif qt == 'indexes_g_compare':
             self.make_indexes_g_compare_ans(answer, builder, chain, result)
@@ -131,8 +131,6 @@ class AnswerSearcher:
         # 地区指标倍数比较（只有两个地区） & 地区指标数量比较（只有两个地区）
         elif qt in ('areas_m_compare', 'areas_n_compare'):
             self.make_areas_m_or_n_compare_ans(qt, answer, builder, chain, result)
-        elif qt in ('areas_2m_compare', 'areas_2n_compare'):
-            self.make_areas_2m_or_2n_compare_ans(qt, answer, builder, chain, result)
         # 地区指标值同比比较
         elif qt == 'areas_g_compare':
             self.make_areas_g_compare_ans(answer, builder, chain, result)
@@ -293,29 +291,6 @@ class AnswerSearcher:
                         answer.add_sub_answers(f'后者是前者的{res2}倍')
                 answer.end_sub_answers()
 
-    def make_indexes_2m_or_2n_compare_ans(self, qt: str, answer: Answer, builder: AnswerBuilder,
-                                          chain: TranslationChain, result: Result):
-        data = self._search_direct(chain)
-        builder.feed_data(data)
-        operator = truediv if qt == 'indexes_2m_compare' else sub
-        for item, name in builder.product_data_with_name(result["index"]):
-            x, y = item
-            if builder.binary_decision(
-                    x, y,
-                    not_x=f'无关于{result["year"][0]}年{name}的记录',
-                    not_y=f'无关于{result["year"][1]}年{name}的记录'
-            ):
-                res = builder.binary_calculation(x["r.value"], y["r.value"], operator)
-                if builder.add_if_is_not_none(res, no=f'{name}的记录为无效的值类型，无法比较', to_sub=False):
-                    if qt == 'indexes_2m_compare':
-                        line = f'{result["year"][0]}年的{name}（{x["r.value"]}{x["r.unit"]}）' \
-                               f'是{result["year"][1]}年的（{y["r.value"]}{y["r.unit"]}）{res}倍'
-                    else:
-                        line = f'{result["year"][0]}年的{name}（{x["r.value"]}{x["r.unit"]}）' \
-                               f'比{result["year"][1]}年的（{y["r.value"]}{y["r.unit"]}）' \
-                               f'{sign(res, ("减少", "增加"))}{abs(res)}{x["r.unit"]}'
-                    answer.add_answer(line)
-
     def make_indexes_g_compare_ans(self, answer: Answer, builder: AnswerBuilder,
                                    chain: TranslationChain, result: Result):
         data = self._search_direct(chain)
@@ -427,28 +402,45 @@ class AnswerSearcher:
                         answer.add_sub_answers(f'后者是前者的{res2}倍')
                 answer.end_sub_answers()
 
-    def make_areas_2m_or_2n_compare_ans(self, qt: str, answer: Answer, builder: AnswerBuilder,
-                                        chain: TranslationChain, result: Result):
-        data = self._search_direct(chain, unpack=True)
+    def make_indexes_or_areas_2m_or_2n_compare_ans(self, qt: str, answer: Answer, builder: AnswerBuilder,
+                                                   chain: TranslationChain, result: Result):
+        # set operator
+        if qt in ('areas_2m_compare', 'indexes_2m_compare'):
+            operator = truediv
+        else:
+            operator = sub
+        # set gen and flatten
+        if qt in ('areas_2m_compare', 'areas_2n_compare'):
+            gen = [result['area'], result['index']]
+            unpack = True
+        else:
+            gen = [result['index']]
+            unpack = False
+        # code begin
+        data = self._search_direct(chain, unpack=unpack)
         builder.feed_data(data)
-        operator = truediv if qt == 'areas_2m_compare' else sub
-        for item, name in builder.product_data_with_name(result["area"], result["index"], flatten=True):
+        for item, name in builder.product_data_with_name(*gen, flatten=unpack):
             x, y = item
             if builder.binary_decision(
                     x, y,
                     not_x=f'无关于{result["year"][0]}年的{name}的记录',
                     not_y=f'无关于{result["year"][0]}年的{name}的记录'
             ):
+                answer.begin_sub_answers()
                 res = builder.binary_calculation(x["r.value"], y["r.value"], operator)
-                if builder.add_if_is_not_none(res, no=f'{name}的记录为无效的值类型，无法比较', to_sub=False):
-                    if qt == 'areas_2m_compare':
-                        line = f'{result["year"][0]}年的{name}（{x["r.value"]}{x["r.unit"]}）' \
-                               f'是{result["year"][1]}年的（{y["r.value"]}{y["r.unit"]}）{res}倍'
+                if builder.add_if_is_not_none(res, no=f'{name}的记录为无效的值类型，无法比较'):
+                    answer.add_sub_answers(f'{result["year"][0]}年的{name}为{x["r.value"]}{x["r.unit"]}')
+                    answer.add_sub_answers(f'{result["year"][1]}年的{name}为{y["r.value"]}{y["r.unit"]}')
+                    if qt in ('areas_2m_compare', 'indexes_2m_compare'):
+                        ux, uy = x['r.unit'], y['r.unit']
+                        # 单位为%的数值不支持此类型比较
+                        if ux == uy == '%':
+                            answer.add_sub_answers(f'它们单位为‘%’，不支持此类型的比较')
+                        else:
+                            answer.add_sub_answers(f'前者是后者的{res}倍')
                     else:
-                        line = f'{result["year"][0]}年的{name}（{x["r.value"]}{x["r.unit"]}）' \
-                               f'比{result["year"][1]}年的（{y["r.value"]}{y["r.unit"]}）' \
-                               f'{sign(res, ("减少", "增加"))}{abs(res)}{x["r.unit"]}'
-                    answer.add_answer(line)
+                        answer.add_sub_answers(f'前者比后者{sign(res, ("减少", "增加"))}{abs(res)}{x["r.unit"]}')
+                answer.end_sub_answers()
 
     def make_areas_g_compare_ans(self, answer: Answer, builder: AnswerBuilder,
                                  chain: TranslationChain, result: Result):
