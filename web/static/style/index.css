@@ -87,3 +87,50 @@ body {
     color: white;
     border-radius: 10px;
 }
+
+/*tooltip*/
+.tooltip {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+    border-bottom: 1px dotted #777;
+}
+
+.tooltip-content {
+    opacity: 0;
+    visibility: hidden;
+    font: 12px Arial, Helvetica;
+    text-align: center;
+    border-color: #aaa #555 #555 #aaa;
+    border-style: solid;
+    border-width: 1px;
+    padding: 15px;
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    margin-left: -76px;
+    background-color: #fff;
+    transition: bottom .2s ease, opacity .2s ease;
+}
+
+.tooltip-content:after,
+.tooltip-content:before {
+    bottom: -15px;
+    content: "";
+    position: absolute;
+    left: 50%;
+    margin-left: -10px;
+}
+
+.tooltip-content:before {
+    border-right-width: 25px;
+    border-top-color: #555;
+    border-top-width: 15px;
+    bottom: -15px;
+}
+
+.tooltip:hover .tooltip-content{
+    opacity: 1;
+    visibility: visible;
+    bottom: 30px;
+}

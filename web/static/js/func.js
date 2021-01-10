@@ -3,6 +3,30 @@
 var inputCount = 0;
 let flag = true; // null placeholder
 
+let keywords = [
+    '运输航空', '运输周转量', '旅客运输量', '货邮运输量', '旅客吞吐量',
+    '东部地区', '东北地区', '中部地区', '西部地区', '货邮吞吐量', '起降架次',
+    '大中型飞机', '小型飞机', '经济效益', '主要航空公司', '安康杯'
+]
+let keynotes = [
+    '各项数据为正式年报数据，部分统计数据与此前公布的初步统计数据如有出入，以本次公布数据为准。',
+    '涉及的数据为国内航空公司承运的数据。',
+    '涉及的数据为国内航空公司承运的数据。',
+    '涉及的数据为国内航空公司承运的数据。',
+    '指报告期内进港（机场）和出港的旅客人数。',
+    '指北京、上海、山东、江苏、天津、浙江、海南、河北、福建和广东10省市。',
+    '指黑龙江、辽宁和吉林3省。',
+    '指江西、湖北、湖南、河南、安徽和山西6省。',
+    '指宁夏、陕西、云南、内蒙古、广西、甘肃、贵州、西藏、新疆、重庆、青海和四川12省（区、市）。',
+    '指报告期内货物和邮件的进出港数量。',
+    '指报告期内在机场进出港飞机的全部起飞和降落次数，起飞、降落各算一架次。',
+    '指座级在100座以上的运输飞机。',
+    '指座级在100座以下的运输飞机。',
+    '涉及数据为财务快报数据，最终数据以财务年报数据为准。',
+    '指南航、国航、东航、海南、深圳、四川、厦门、山东、上海、天津等十家航空公司。',
+    '是安全生产荣誉奖杯。“安康杯”竞赛活动旨在通过竞赛不断推进企事业单位安全生产工作和安全文化建设，提高全民安全生产意识，从而降低各类事故的发生率和各类职业病的发病率。',
+]
+
 $(function () {
     // 输入框：回车键发送
     let inputArea = $('#input-dialog');
@@ -69,9 +93,12 @@ $(function () {
         // create answer element
         let answerElm = document.createElement('div');
         answerElm.className = 'answer';
-        answerElm.innerText = '[A' + inputCount + ']：' + data['answer'];
+        // link note to it
+        let answer = link_note(data['answer']);
+        answerElm.innerHTML = '[A' + inputCount + ']：' + answer;
         // add to output area
         outputArea.appendChild(answerElm);
+        init_note();
         // if it has chart
         for(var i = 0; i < data['chart_count']; i++) {
             // create chart canvas
@@ -102,6 +129,30 @@ $(function () {
                 // console.log(msg);
                 show_error(msg);
             }
+        });
+    }
+
+    // 给出关键词语的注释
+    function link_note(answer) {
+        for(var i=0; i<keywords.length; i++) {
+            let j = answer.indexOf(keywords[i]);
+            let end = j+keywords[i].length;
+            if(j !== -1) {
+                return answer.slice(0,j)+'<b data-tooltip="'+keynotes[i]+'">'+answer.slice(j,end)+'</b>'+answer.slice(end,answer.length);
+            }
+        }
+        return answer;
+    }
+
+    function init_note() {
+        $('[data-tooltip]').addClass('tooltip');
+        $('.tooltip').each(function () {
+            $(this).append('<span class="tooltip-content">' + $(this).attr('data-tooltip') + '</span>');
+        })
+        $('.tooltip').mouseover(function () {
+            $(this).children('.tooltip-content').css('visibility', 'visible');
+        }).mouseout(function () {
+            $(this).children('.tooltip-content').css('visibility', 'hidden');
         });
     }
 
