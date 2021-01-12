@@ -1,8 +1,10 @@
 import os
 import json
+import pickle
 
 from py2neo import Graph, Node
 
+from lib.life import Life
 from lib.utils import write_to_file
 from lib.mapping import PREFIX_LABEL_MAP, PREFIX_S_REL_MAP, PREFIX_V_REL_MAP
 from const import URI, USERNAME, PASSWORD
@@ -15,9 +17,11 @@ class CivilAviationKnowledgeGraph:
         self.export_dir = "./data/dicts/"
 
         self.graph = Graph(URI, auth=(USERNAME, PASSWORD))
+        self.life = Life()
         self.entities = {}  # 收集实体
         self.attrs = {}  # 实体属性
         self.rels_structures = set()  # 实体结构关系
+        self.rels_structures_life = {}  # 实体结构关系的生命周期
         self.rels_values = []  # 实体值关系
         self.cur_value_rel_src = None  # 记录值关系的源节点
         self.cur_index_name = None  # 记录当前指标名称
@@ -35,6 +39,7 @@ class CivilAviationKnowledgeGraph:
             # 分离前缀和实体名
             prefix, name = fields.split('-')
             if first_time:
+                self.life.encode(name)
                 self.cur_value_rel_src = (prefix, name)
             if prefix == 'I' and entities.get("next"):
                 self.cur_index_name = name
@@ -65,7 +70,16 @@ class CivilAviationKnowledgeGraph:
 
     def collect_structure_rel(self, src: tuple, dst: tuple):
         """ 收集实体结构关系 """
-        self.rels_structures.add((src[0] + '-' + dst[0], src[1], dst[1]))
+        key = (src[0] + '-' + dst[0], src[1], dst[1])
+        self.rels_structures.add(key)
+        # 计算生命周期
+        life = self.rels_structures_life.get(key)
+        code = self.life.get_life(self.cur_value_rel_src[1])
+        if life is None:
+            self.rels_structures_life[key] = code
+        else:
+            if not self.life.live(code, life):
+                self.rels_structures_life[key] = self.life.extend_life(life, code)
 
     def collect_value_rel(self, dst: tuple, attrs: dict):
         """ 收集实体值关系 """
@@ -99,7 +113,8 @@ class CivilAviationKnowledgeGraph:
             la = PREFIX_LABEL_MAP[a]
             lb = PREFIX_LABEL_MAP[b]
             rel = PREFIX_S_REL_MAP[prefix]
-            self.create_relationship(la, lb, src, dst, rel)
+            self.create_relationship(la, lb, src, dst, rel,
+                                     {'life': self.rels_structures_life[(prefix, src, dst)]})
 
         for (prefix, src, dst, attrs) in self.rels_values:
             a, b = prefix.split('-')
@@ -148,6 +163,11 @@ class CivilAviationKnowledgeGraph:
             fast_table.remove(char)
         write_to_file("./data/dicts/fast_index_table.txt", [''.join(fast_table)])
 
+    def export_life_code(self):
+        """ 导出生命周期编码 """
+        with open("./data/dicts/life.pk", 'wb') as f:
+            pickle.dump(self.life, f)
+
 
 if __name__ == '__main__':
     cakg = CivilAviationKnowledgeGraph()
@@ -155,3 +175,4 @@ if __name__ == '__main__':
     cakg.build()
     cakg.export_collections()
     cakg.export_fast_index_table()
+    cakg.export_life_code()

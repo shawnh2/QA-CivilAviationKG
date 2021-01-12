@@ -10,15 +10,24 @@ from const import CHART_RENDER_DIR
 
 class Painter:
 
-    def __init__(self, ):
+    def __init__(self):
         if not os.path.exists(CHART_RENDER_DIR):
             os.mkdir(CHART_RENDER_DIR)
 
-    def paint_bar(self, x: list, *y: tuple, unit: str, title: str,  mark_point: bool = False):
+    def paint_bar(self, x: list, collects: list, title: str,  mark_point: bool = False):
         bar = Bar(init_opts=opts.InitOpts(theme=ThemeType.LIGHT))
         bar.add_xaxis(x)
-        for name, data in y:
-            bar.add_yaxis(name, data)
+        for collect in collects:
+            for i, (name, unit, data) in enumerate(collect):
+                bar.add_yaxis(f'{name}-单位：{unit}', data, yaxis_index=i)
+                if i != 0:
+                    bar.extend_axis(
+                        yaxis=opts.AxisOpts(
+                            name='',
+                            type_='value',
+                            position='right',
+                        )
+                    )
         bar.set_global_opts(
             title_opts=opts.TitleOpts(
                 title=title,
@@ -28,7 +37,7 @@ class Painter:
         )
         bar.set_series_opts(
             label_opts=opts.LabelOpts(position='top'),
-            tooltip_opts=opts.TooltipOpts(formatter=f'{{b}}年{{a}}：{{c}}{unit}')
+            tooltip_opts=opts.TooltipOpts(formatter=f'{{b}}年{{a}}：{{c}}')
         )
         if mark_point:
             bar.set_series_opts(

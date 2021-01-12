@@ -14,13 +14,12 @@ class QuestionParser:
         # 基本sql语句, 供翻译方法使用
         self.sql_Y_status = 'match (y:Year) where y.name="{y}" return y.info'
         self.sql_C_status = 'match (y:Year)-[r:info]->(c:Catalog) where y.name="{y}" and c.name="{c}" return r.info'
-        self.sql_C_exist = 'match (y:Year)-[r:include]->(c:Catalog) where y.name="{y}" return c.name'
         self.sql_I_value = 'match (y:Year)-[r:value]->(i:Index) where y.name="{y}" and i.name="{i}" return r.value,r.unit'
         self.sql_A_value = 'match (y:Year)-[r:`{i}`]->(n:Area) where y.name="{y}" and n.name="{a}" return r.value,r.unit,r.repr'
 
-        self.sql_find_I_parent = 'match (n:Index)-[r:contain]->(m:Index) where m.name="{i}" return n.name'
-        self.sql_find_A_parent = 'match (n:Area)-[r:contain]->(m:Area) where m.name="{a}" return n.name'
-        self.sql_find_I_child = 'match (n:Index)-[]->(m) where n.name="{i}" return m.name,labels(m)[0]'
+        self.sql_find_I_parent = 'match (n:Index)-[r:contain]->(m:Index) where m.name="{i}" return n.name,r.life'
+        self.sql_find_A_parent = 'match (n:Area)-[r:contain]->(m:Area) where m.name="{a}" return n.name,r.life'
+        self.sql_find_I_child = 'match (n:Index)-[r]->(m) where n.name="{i}" return m.name,labels(m)[0],r.life'
         self.sql_find_Is = 'match (y:Year)-[r:value]->(i:Index) where y.name="{y}" return i.name'
         self.sql_find_Cs = 'match (y:Year)-[r:include]->(c:Catalog) where y.name="{y}" return c.name'
         self.sql_find_begin_stats_Ys = 'match (y:Year)-[r:value]->(i:Index) where i.name="{i}" return y.name'
@@ -89,7 +88,7 @@ class QuestionParser:
 
     # 年度目录包含哪些
     def trans_exist_catalog(self, years):
-        self.chain.make([self.sql_C_exist.format(y=years[0])])
+        self.chain.make([self.sql_find_Cs.format(y=years[0])])
 
     # 指标值
     def trans_index_value(self, years, indexes):
@@ -127,7 +126,7 @@ class QuestionParser:
         self.chain.make([self.sql_find_I_child.format(i=i) for i in indexes]) \
                   .then([self.sql_I_value.format(y=years[0], i='{}') + ',r.child_id']) \
                   .then([self.sql_A_value.format(y=years[0], i='{}', a='{}') + ',r.child_id']) \
-                  .then([self.sql_I_value.format(y=years[0], i=i) for i in indexes])
+                  .then([self.sql_I_value.format(y=years[0], i=i) for i in indexes])  # overall
 
     # 地区指标值
     def trans_area_value(self, years, areas, indexes):
