@@ -168,7 +168,7 @@ class AnswerSearcher:
                 result['catalog'],
                 if_is_none=lambda _, na: f'并没有关于{result["year"][0]}年{na.subject()}的描述'
         ):
-            answer.add_answer(f'{name.subject()}在{item.info}')
+            answer.add_answer(item.info)
 
     def make_exist_catalog_ans(self, answer: Answer, chain: TranslationChain, result: Result):
         data = self._search_direct(chain)

@@ -35,9 +35,10 @@ class Result(object):
         return self.region_wds_types.count(type_name)
 
     def add_word(self, word: str, type_: str):
-        self.region_wds[word] = type_
-        self.region_wds_types.append(type_)
-        self.region_wds_reverse.setdefault(type_, []).append(word)
+        if word not in self.region_wds.keys():
+            self.region_wds[word] = type_
+            self.region_wds_types.append(type_)
+            self.region_wds_reverse.setdefault(type_, []).append(word)
 
     def add_qtype(self, question_type):
         self.question_types.append(question_type)
