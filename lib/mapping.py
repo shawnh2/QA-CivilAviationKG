@@ -10,7 +10,7 @@ PREFIX_LABEL_MAP = {
 }
 # 前缀-结构关系映射字典
 PREFIX_S_REL_MAP = {'Y-C': "include", 'C-I': "include", 'I-I': "contain",
-                    'I-A': "locate", 'A-A': "contain", 'A-I': "of"}
+                    'I-A': "locate", 'A-A': "contain"}
 # 前缀-值关系映射字典
 PREFIX_V_REL_MAP = {'Y-C': "info", 'Y-I': "value", 'Y-A': None}
 
