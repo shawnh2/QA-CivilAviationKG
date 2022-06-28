@@ -1,5 +1,8 @@
 # CivilAviation Q&A
-A QA system based on Civil Aviation knowledge graph. 构建民航业知识图谱并实现语义查询。
+
+基于民航业知识图谱的自动问答系统。
+
+A QA system based on Civil Aviation knowledge graph.
 
 ## 平台
 - Windows 10 x64
